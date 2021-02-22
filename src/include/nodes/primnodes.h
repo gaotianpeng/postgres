@@ -668,18 +668,18 @@ typedef enum SubLinkType
 	CTE_SUBLINK					/* for SubPlans only */
 } SubLinkType;
 
-
+// 描述子链接
 typedef struct SubLink
 {
 	Expr		xpr;
-	SubLinkType subLinkType;	/* see above */
+	SubLinkType subLinkType;	/* see above */	// 子链接类型
 	int			subLinkId;		/* ID (1..n); 0 if not MULTIEXPR */
-	Node	   *testexpr;		/* outer-query test for ALL/ANY/ROWCOMPARE */
+	Node	   *testexpr;		/* outer-query test for ALL/ANY/ROWCOMPARE */	// 条件表达式
 	List	   *operName;		/* originally specified operator name */
-	Node	   *subselect;		/* subselect as Query* or raw parsetree */
+	Node	   *subselect;		/* subselect as Query* or raw parsetree */	// 子查询语句
 	int			location;		/* token location, or -1 if unknown */
 } SubLink;
-
+// 从形式上描述了子查询的一种可执行状态
 /*
  * SubPlan - executable expression node for a subplan (sub-SELECT)
  *
@@ -724,20 +724,20 @@ typedef struct SubPlan
 	/* Fields copied from original SubLink: */
 	SubLinkType subLinkType;	/* see above */
 	/* The combining operators, transformed to an executable expression: */
-	Node	   *testexpr;		/* OpExpr or RowCompareExpr expression tree */
+	Node	   *testexpr;		/* OpExpr or RowCompareExpr expression tree */	// 测试表达式，与SubLink中相同
 	List	   *paramIds;		/* IDs of Params embedded in the above */
 	/* Identification of the Plan tree to use: */
 	int			plan_id;		/* Index (from 1) in PlannedStmt.subplans */
 	/* Identification of the SubPlan for EXPLAIN and debugging purposes: */
-	char	   *plan_name;		/* A name assigned during planning */
+	char	   *plan_name;		/* A name assigned during planning */	// 查询计划名称
 	/* Extra data useful for determining subplan's output type: */
-	Oid			firstColType;	/* Type of first column of subplan result */
+	Oid			firstColType;	/* Type of first column of subplan result */	// 子查询计划输出结果第一列类型
 	int32		firstColTypmod; /* Typmod of first column of subplan result */
 	Oid			firstColCollation;	/* Collation of first column of subplan
 									 * result */
-	/* Information about execution strategy: */
+	/* Information about execution strategy: */	// 执行策略，该策略将被执行器所使用
 	bool		useHashTable;	/* true to store subselect output in a hash
-								 * table (implies we are doing "IN") */
+								 * table (implies we are doing "IN") */	// true：将查询输出保存至hash表中
 	bool		unknownEqFalse; /* true if it's okay to return FALSE when the
 								 * spec result is UNKNOWN; this allows much
 								 * simpler handling of null values */
@@ -748,9 +748,9 @@ typedef struct SubPlan
 	List	   *setParam;		/* initplan subqueries have to set these
 								 * Params for parent plan */
 	List	   *parParam;		/* indices of input Params from parent plan */
-	List	   *args;			/* exprs to pass as parParam values */
+	List	   *args;			/* exprs to pass as parParam values */	// 执行代价估算
 	/* Estimated execution costs: */
-	Cost		startup_cost;	/* one-time setup cost */
+	Cost		startup_cost;	/* one-time setup cost */	// 启动代价
 	Cost		per_call_cost;	/* cost for each subplan evaluation */
 } SubPlan;
 
@@ -1370,7 +1370,7 @@ typedef struct InferenceElem
 	Oid			infercollid;	/* OID of collation, or InvalidOid */
 	Oid			inferopclass;	/* OID of att opclass, or InvalidOid */
 } InferenceElem;
-
+// 用来描述目标列中的每一项。除了普通基表中的某一列的形多，输出结果还可能包含聚集函数、别名等形式
 /*--------------------
  * TargetEntry -
  *	   a target entry (used in query target lists)
@@ -1429,12 +1429,12 @@ typedef struct TargetEntry
 {
 	Expr		xpr;
 	Expr	   *expr;			/* expression to evaluate */
-	AttrNumber	resno;			/* attribute number (see notes above) */
-	char	   *resname;		/* name of the column (could be NULL) */
+	AttrNumber	resno;			/* attribute number (see notes above) */	// 属性列的编号，与该目标列项出现位置一致(从1开始)
+	char	   *resname;		/* name of the column (could be NULL) */	// 列名称
 	Index		ressortgroupref;	/* nonzero if referenced by a sort/group
-									 * clause */
-	Oid			resorigtbl;		/* OID of column's source table */
-	AttrNumber	resorigcol;		/* column's number in source table */
+									 * clause */	// 非0时用来表示其在sort/group语句中的编号
+	Oid			resorigtbl;		/* OID of column's source table */	// 该列所属基表的 Oid
+	AttrNumber	resorigcol;		/* column's number in source table */	// 源基表的列编号
 	bool		resjunk;		/* set to true to eliminate the attribute from
 								 * final target list */
 } TargetEntry;
@@ -1469,7 +1469,7 @@ typedef struct TargetEntry
  * WHERE as separate.
  * ----------------------------------------------------------------
  */
-
+// 描述范围表，即通常描述的SQL查询语句中FROM子句给出的语法元素
 /*
  * RangeTblRef - reference to an entry in the query's rangetable
  *
@@ -1482,7 +1482,7 @@ typedef struct RangeTblRef
 	NodeTag		type;
 	int			rtindex;
 } RangeTblRef;
-
+// 描述了语句中Join操作
 /*----------
  * JoinExpr - for SQL JOIN expressions
  *
@@ -1509,16 +1509,16 @@ typedef struct RangeTblRef
 typedef struct JoinExpr
 {
 	NodeTag		type;
-	JoinType	jointype;		/* type of join */
-	bool		isNatural;		/* Natural join? Will need to shape table */
-	Node	   *larg;			/* left subtree */
-	Node	   *rarg;			/* right subtree */
-	List	   *usingClause;	/* USING clause, if any (list of String) */
-	Node	   *quals;			/* qualifiers on join, if any */
-	Alias	   *alias;			/* user-written alias clause, if any */
-	int			rtindex;		/* RT index assigned for join, or 0 */
+	JoinType	jointype;		/* type of join */	// 连接类型
+	bool		isNatural;		/* Natural join? Will need to shape table */	// 是否是自然连接
+	Node	   *larg;			/* left subtree */	// 连接左语句
+	Node	   *rarg;			/* right subtree */	// 连接右语句
+	List	   *usingClause;	/* USING clause, if any (list of String) */	// using 子句
+	Node	   *quals;			/* qualifiers on join, if any */	// 条件语句
+	Alias	   *alias;			/* user-written alias clause, if any */	// 别名信息
+	int			rtindex;		/* RT index assigned for join, or 0 */	// 连接的RT索引编号
 } JoinExpr;
-
+// 用来描述一条查询语句中的 from ... where ...结构
 /*----------
  * FromExpr - represents a FROM ... WHERE ... construct
  *
@@ -1531,8 +1531,8 @@ typedef struct JoinExpr
 typedef struct FromExpr
 {
 	NodeTag		type;
-	List	   *fromlist;		/* List of join subtrees */
-	Node	   *quals;			/* qualifiers on join, if any */
+	List	   *fromlist;		/* List of join subtrees */	// 描述了from子句中给出的范围表，可以由基表或子查询形式来描述
+	Node	   *quals;			/* qualifiers on join, if any */ // 描述了查询语句中的条件子句(where clause)
 } FromExpr;
 
 /*----------

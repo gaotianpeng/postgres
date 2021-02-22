@@ -88,7 +88,7 @@ static void transformLockingClause(ParseState *pstate, Query *qry,
 static bool test_raw_expression_coverage(Node *node, void *context);
 #endif
 
-
+// 完成对SQL语句的词法和语法分析
 /*
  * parse_analyze
  *		Analyze a raw parse tree and transform it to Query form.

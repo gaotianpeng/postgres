@@ -755,7 +755,7 @@ pg_analyze_and_rewrite_params(RawStmt *parsetree,
 
 	return querytree_list;
 }
-
+// 使用pg_rewrite, pg_rules等系统表中提供的重写规则对原始语法树进行重写操作
 /*
  * Perform rewriting of a query produced by parse analysis.
  *

@@ -93,7 +93,7 @@ typedef uint32 AclMode;			/* a bitmask of privilege bits */
 /*****************************************************************************
  *	Query Tree
  *****************************************************************************/
-
+// 描述一条SQL经过词法和语法解析后得到的查询树
 /*
  * Query -
  *	  Parse analysis turns all statements into a Query tree
@@ -134,28 +134,28 @@ typedef struct Query
 
 	List	   *cteList;		/* WITH list (of CommonTableExpr's) */
 
-	List	   *rtable;			/* list of range table entries */
+	List	   *rtable;			/* list of range table entries */	// 范围表列表
 	FromExpr   *jointree;		/* table join tree (FROM and WHERE clauses) */
 
-	List	   *targetList;		/* target list (of TargetEntry) */
+	List	   *targetList;		/* target list (of TargetEntry) */	// 目标列子句
 
 	OverridingKind override;	/* OVERRIDING clause */
 
 	OnConflictExpr *onConflict; /* ON CONFLICT DO [NOTHING | UPDATE] */
 
-	List	   *returningList;	/* return-values list (of TargetEntry) */
+	List	   *returningList;	/* return-values list (of TargetEntry) */	// 描述return子句
 
-	List	   *groupClause;	/* a list of SortGroupClause's */
+	List	   *groupClause;	/* a list of SortGroupClause's */		// 描述分组子句
 
 	List	   *groupingSets;	/* a list of GroupingSet's if present */
 
-	Node	   *havingQual;		/* qualifications applied to groups */
+	Node	   *havingQual;		/* qualifications applied to groups */	// 描述having子句
 
-	List	   *windowClause;	/* a list of WindowClause's */
+	List	   *windowClause;	/* a list of WindowClause's */	// 描述window子句
 
 	List	   *distinctClause; /* a list of SortGroupClause's */
 
-	List	   *sortClause;		/* a list of SortGroupClause's */
+	List	   *sortClause;		/* a list of SortGroupClause's */	// 描述排序子句
 
 	Node	   *limitOffset;	/* # of result tuples to skip (int8 expr) */
 	Node	   *limitCount;		/* # of result tuples to return (int8 expr) */
@@ -532,16 +532,16 @@ typedef struct WindowDef
 #define FRAMEOPTION_DEFAULTS \
 	(FRAMEOPTION_RANGE | FRAMEOPTION_START_UNBOUNDED_PRECEDING | \
 	 FRAMEOPTION_END_CURRENT_ROW)
-
+// 描述了出现在FROM子句中的子查询
 /*
  * RangeSubselect - subquery appearing in a FROM clause
  */
 typedef struct RangeSubselect
 {
 	NodeTag		type;
-	bool		lateral;		/* does it have LATERAL prefix? */
-	Node	   *subquery;		/* the untransformed sub-select clause */
-	Alias	   *alias;			/* table alias & optional column aliases */
+	bool		lateral;		/* does it have LATERAL prefix? */	// 是否在lateral Join中
+	Node	   *subquery;		/* the untransformed sub-select clause */	// 子查询语句，普通SQL语句
+	Alias	   *alias;			/* table alias & optional column aliases */	// 子查询的别名
 } RangeSubselect;
 
 /*
@@ -961,24 +961,24 @@ typedef struct PartitionCmd
  */
 typedef enum RTEKind
 {
-	RTE_RELATION,				/* ordinary relation reference */
-	RTE_SUBQUERY,				/* subquery in FROM */
-	RTE_JOIN,					/* join */
-	RTE_FUNCTION,				/* function in FROM */
+	RTE_RELATION,				/* ordinary relation reference */	// 普通基表类型
+	RTE_SUBQUERY,				/* subquery in FROM */	// 子查询类型
+	RTE_JOIN,					/* join */	// 连接类型
+	RTE_FUNCTION,				/* function in FROM */	// 函数类型
 	RTE_TABLEFUNC,				/* TableFunc(.., column list) */
-	RTE_VALUES,					/* VALUES (<exprlist>), (<exprlist>), ... */
-	RTE_CTE,					/* common table expr (WITH list element) */
+	RTE_VALUES,					/* VALUES (<exprlist>), (<exprlist>), ... */	// values类型
+	RTE_CTE,					/* common table expr (WITH list element) */		// cte类型
 	RTE_NAMEDTUPLESTORE,		/* tuplestore, e.g. for AFTER triggers */
 	RTE_RESULT					/* RTE represents an empty FROM clause; such
 								 * RTEs are added by the planner, they're not
 								 * present during parsing or rewriting */
 } RTEKind;
-
+// 描述范围表，即通常描述的SQL查询语句中FROM子句给出的语法元素
 typedef struct RangeTblEntry
 {
 	NodeTag		type;
 
-	RTEKind		rtekind;		/* see above */
+	RTEKind		rtekind;		/* see above */	// 类型信息
 
 	/*
 	 * XXX the fields applicable to only some rte kinds should be merged into
@@ -1005,7 +1005,7 @@ typedef struct RangeTblEntry
 	 * target table.  We leave such RTEs with their original lockmode so as to
 	 * avoid getting an additional, lesser lock.
 	 */
-	Oid			relid;			/* OID of the relation */
+	Oid			relid;			/* OID of the relation */	// 基表的OID
 	char		relkind;		/* relation kind (see pg_class.relkind) */
 	int			rellockmode;	/* lock level that query requires on the rel */
 	struct TableSampleClause *tablesample;	/* sampling info, or NULL */
@@ -1013,7 +1013,7 @@ typedef struct RangeTblEntry
 	/*
 	 * Fields valid for a subquery RTE (else NULL):
 	 */
-	Query	   *subquery;		/* the sub-query */
+	Query	   *subquery;		/* the sub-query */		// 子查询
 	bool		security_barrier;	/* is from security_barrier view? */
 
 	/*
@@ -1051,7 +1051,7 @@ typedef struct RangeTblEntry
 	 * merged columns could not be dropped); this is not accounted for in
 	 * joinleftcols/joinrighttcols.
 	 */
-	JoinType	jointype;		/* type of join */
+	JoinType	jointype;		/* type of join */		// 连接类型
 	int			joinmergedcols; /* number of merged (JOIN USING) columns */
 	List	   *joinaliasvars;	/* list of alias-var expansions */
 	List	   *joinleftcols;	/* left-side input column numbers */
@@ -1116,12 +1116,12 @@ typedef struct RangeTblEntry
 	/*
 	 * Fields valid in all RTEs:
 	 */
-	Alias	   *alias;			/* user-written alias clause, if any */
+	Alias	   *alias;			/* user-written alias clause, if any */	// 别名信息
 	Alias	   *eref;			/* expanded reference names */
-	bool		lateral;		/* subquery, function, or values is LATERAL? */
-	bool		inh;			/* inheritance requested? */
-	bool		inFromCl;		/* present in FROM clause? */
-	AclMode		requiredPerms;	/* bitmask of required access permissions */
+	bool		lateral;		/* subquery, function, or values is LATERAL? */	// 是否为lateral类型
+	bool		inh;			/* inheritance requested? */	// 是否是继承表
+	bool		inFromCl;		/* present in FROM clause? */	// 是否出现在FROM语句中
+	AclMode		requiredPerms;	/* bitmask of required access permissions */	// 访问控制信息
 	Oid			checkAsUser;	/* if valid, check access as this role */
 	Bitmapset  *selectedCols;	/* columns needing SELECT permission */
 	Bitmapset  *insertedCols;	/* columns needing INSERT permission */
@@ -1624,13 +1624,13 @@ typedef struct SelectStmt
 	 */
 	List	   *distinctClause; /* NULL, list of DISTINCT ON exprs, or
 								 * lcons(NIL,NIL) for all (SELECT DISTINCT) */
-	IntoClause *intoClause;		/* target for SELECT INTO */
-	List	   *targetList;		/* the target list (of ResTarget) */
-	List	   *fromClause;		/* the FROM clause */
-	Node	   *whereClause;	/* WHERE qualification */
-	List	   *groupClause;	/* GROUP BY clauses */
-	Node	   *havingClause;	/* HAVING conditional-expression */
-	List	   *windowClause;	/* WINDOW window_name AS (...), ... */
+	IntoClause *intoClause;		/* target for SELECT INTO */		// into 子句
+	List	   *targetList;		/* the target list (of ResTarget) */	// 目标列子句
+	List	   *fromClause;		/* the FROM clause */		// from 子句
+	Node	   *whereClause;	/* WHERE qualification */	// where 子句
+	List	   *groupClause;	/* GROUP BY clauses */	// group by 子句
+	Node	   *havingClause;	/* HAVING conditional-expression */	// having 子句
+	List	   *windowClause;	/* WINDOW window_name AS (...), ... */	// window 子句
 
 	/*
 	 * In a "leaf" node representing a VALUES list, the above fields are all
@@ -1646,20 +1646,21 @@ typedef struct SelectStmt
 	 * These fields are used in both "leaf" SelectStmts and upper-level
 	 * SelectStmts.
 	 */
-	List	   *sortClause;		/* sort clause (a list of SortBy's) */
-	Node	   *limitOffset;	/* # of result tuples to skip */
+	List	   *sortClause;		/* sort clause (a list of SortBy's) */	// order by 子句
+	Node	   *limitOffset;	/* # of result tuples to skip */		// limit 子句
 	Node	   *limitCount;		/* # of result tuples to return */
 	LimitOption limitOption;	/* limit type */
-	List	   *lockingClause;	/* FOR UPDATE (list of LockingClause's) */
-	WithClause *withClause;		/* WITH clause */
+	List	   *lockingClause;	/* FOR UPDATE (list of LockingClause's) */	// for update 形式
+	WithClause *withClause;		/* WITH clause */	// with 子句
 
 	/*
 	 * These fields are used only in upper-level SelectStmts.
 	 */
-	SetOperation op;			/* type of set op */
+	SetOperation op;			/* type of set op */	// 集合操作类型,当查询语句中含有集合操作时(UNION, INTERSECT, EXCEPT)
+														// 将集合操作的左、右操作数分别保存于larg和rarg中
 	bool		all;			/* ALL specified? */
-	struct SelectStmt *larg;	/* left child */
-	struct SelectStmt *rarg;	/* right child */
+	struct SelectStmt *larg;	/* left child */	// 左子树
+	struct SelectStmt *rarg;	/* right child */	// 右子树
 	/* Eventually add fields for CORRESPONDING spec here */
 } SelectStmt;
 
