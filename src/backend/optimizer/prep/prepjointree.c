@@ -175,7 +175,7 @@ replace_empty_jointree(Query *parse)
 	rtr->rtindex = rti;
 	parse->jointree->fromlist = list_make1(rtr);
 }
-
+// 分别对IN和EXISTS类型子链接(SubLink)进行优化处理
 /*
  * pull_up_sublinks
  *		Attempt to pull up ANY and EXISTS SubLinks to be treated as
@@ -667,7 +667,8 @@ preprocess_function_rtes(PlannerInfo *root)
 		}
 	}
 }
-
+// 对查询树中的子查询(SubQuery进行上提操作)，将子查询中的基表上提至父查询中，从而使子查询的基表有机会与父查询中的基表进行合并
+// 由查询引擎统一进行优化处理
 /*
  * pull_up_subqueries
  *		Look for subqueries in the rangetable that can be pulled up into

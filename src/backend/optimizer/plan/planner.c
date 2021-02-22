@@ -1032,7 +1032,7 @@ subquery_planner(PlannerGlobal *glob, Query *parse,
 
 	return root;
 }
-
+// 对查询树中的表达式进行预处理, eg: 将表达式进行规则化，常量表达式求值优化等
 /*
  * preprocess_expression
  *		Do subquery_planner's preprocessing work for an expression,

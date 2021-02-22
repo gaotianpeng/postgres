@@ -301,7 +301,7 @@ static ModifyTable *make_modifytable(PlannerInfo *root,
 static GatherMerge *create_gather_merge_plan(PlannerInfo *root,
 											 GatherMergePath *best_path);
 
-
+// 查询引擎将依据查询访问路径中的各个节点类型，分类创建其对应的查询计划
 /*
  * create_plan
  *	  Creates the access plan for a query by recursively processing the
@@ -2738,7 +2738,7 @@ create_limit_plan(PlannerInfo *root, LimitPath *best_path, int flags)
  *
  *****************************************************************************/
 
-
+// 创建顺序扫描查询计划
 /*
  * create_seqscan_plan
  *	 Returns a seqscan plan for the base relation scanned by 'best_path'
@@ -4141,7 +4141,7 @@ create_nestloop_plan(PlannerInfo *root,
 
 	return join_plan;
 }
-
+// 创建 MergeJoin查询计划
 static MergeJoin *
 create_mergejoin_plan(PlannerInfo *root,
 					  MergePath *best_path)
@@ -4448,7 +4448,7 @@ create_mergejoin_plan(PlannerInfo *root,
 
 	return join_plan;
 }
-
+// 以HashJoin类型的查询访问路径为参数构建HashJoin查询计划
 static HashJoin *
 create_hashjoin_plan(PlannerInfo *root,
 					 HashPath *best_path)

@@ -1237,7 +1237,7 @@ inline_cte_walker(Node *node, inline_cte_walker_context *context)
 	return expression_tree_walker(node, inline_cte_walker, context);
 }
 
-
+// 将IN类型子链接转换为 SEMI-JOIN类型的JOIN连接
 /*
  * convert_ANY_sublink_to_join: try to convert an ANY SubLink to a join
  *
@@ -1371,7 +1371,7 @@ convert_ANY_sublink_to_join(PlannerInfo *root, SubLink *sublink,
 
 	return result;
 }
-
+// 将EXSITS类型的子连接转换为SEMI-JOIN类型的JOIN连接
 /*
  * convert_EXISTS_sublink_to_join: try to convert an EXISTS SubLink to a join
  *

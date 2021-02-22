@@ -249,7 +249,7 @@ transformOptionalSelectInto(ParseState *pstate, Node *parseTree)
 
 	return transformStmt(pstate, parseTree);
 }
-
+// 将sql语法树转换为查询树
 /*
  * transformStmt -
  *	  recursively transform a Parse tree into a Query tree.
