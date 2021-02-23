@@ -757,6 +757,11 @@ pg_analyze_and_rewrite_params(RawStmt *parsetree,
 }
 // 使用pg_rewrite, pg_rules等系统表中提供的重写规则对原始语法树进行重写操作
 /*
+	通常系统不会在rewrite阶段对查询树做进一步处理
+	pg_rewrite表中保存的是一个字符串形式的节点，通过stringtonode和nodetostring两个函数
+	将元数据表中的字符串转为相应的node类型的数据，这样我们就可以使用该node对象来替换query树中相应的节点了
+*/
+/*
  * Perform rewriting of a query produced by parse analysis.
  *
  * Note: query must just have come from the parser, because we do not do
