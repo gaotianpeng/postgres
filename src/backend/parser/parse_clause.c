@@ -98,7 +98,7 @@ static Node *transformFrameOffset(ParseState *pstate, int frameOptions,
 								  Oid rangeopfamily, Oid rangeopcintype, Oid *inRangeFunc,
 								  Node *clause);
 
-
+// 处理from子句
 /*
  * transformFromClause -
  *	  Process the FROM clause and add items to the query's range table,
@@ -123,7 +123,7 @@ transformFromClause(ParseState *pstate, List *frmList)
 	 * Note we must process the items left-to-right for proper handling of
 	 * LATERAL references.
 	 */
-	foreach(fl, frmList)
+	foreach(fl, frmList)	// 遍历处理fromList中的每个元素
 	{
 		Node	   *n = lfirst(fl);
 		ParseNamespaceItem *nsitem;
@@ -131,7 +131,7 @@ transformFromClause(ParseState *pstate, List *frmList)
 
 		n = transformFromClauseItem(pstate, n,
 									&nsitem,
-									&namespace);
+									&namespace);	// 处理fromList中的每一项
 
 		checkNameSpaceConflicts(pstate, pstate->p_namespace, namespace);
 
@@ -384,7 +384,11 @@ transformJoinOnClause(ParseState *pstate, JoinExpr *j, List *namespace)
 
 	return result;
 }
-
+// 将每个普通类型的基表以RangeTblEntry类型方式添加到parseState的p_rtable中
+/*
+RangeTblEntry的处理流程
+	parseState->p_rtable->{baseRel1}->{baseRel2}->{null}
+*/
 /*
  * transformTableEntry --- transform a RangeVar (simple relation reference)
  */
@@ -1055,7 +1059,7 @@ transformFromClauseItem(ParseState *pstate, Node *n,
 						ParseNamespaceItem **top_nsitem,
 						List **namespace)
 {
-	if (IsA(n, RangeVar))
+	if (IsA(n, RangeVar))	// 普通类型关系表
 	{
 		/* Plain relation reference, or perhaps a CTE reference */
 		RangeVar   *rv = (RangeVar *) n;
@@ -1075,7 +1079,7 @@ transformFromClauseItem(ParseState *pstate, Node *n,
 		rtr->rtindex = nsitem->p_rtindex;
 		return (Node *) rtr;
 	}
-	else if (IsA(n, RangeSubselect))
+	else if (IsA(n, RangeSubselect))	// FROM子句中的子查询
 	{
 		/* sub-SELECT is like a plain relation */
 		RangeTblRef *rtr;
@@ -1088,7 +1092,7 @@ transformFromClauseItem(ParseState *pstate, Node *n,
 		rtr->rtindex = nsitem->p_rtindex;
 		return (Node *) rtr;
 	}
-	else if (IsA(n, RangeFunction))
+	else if (IsA(n, RangeFunction))	// 函数
 	{
 		/* function is like a plain relation */
 		RangeTblRef *rtr;
@@ -1101,7 +1105,7 @@ transformFromClauseItem(ParseState *pstate, Node *n,
 		rtr->rtindex = nsitem->p_rtindex;
 		return (Node *) rtr;
 	}
-	else if (IsA(n, RangeTableFunc))
+	else if (IsA(n, RangeTableFunc))	// JOIN类型
 	{
 		/* table function is like a plain relation */
 		RangeTblRef *rtr;

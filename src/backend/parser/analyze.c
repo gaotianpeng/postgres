@@ -183,7 +183,7 @@ parse_sub_analyze(Node *parseTree, ParseState *parentParseState,
 
 	return query;
 }
-
+// 实现语法树的转换工作
 /*
  * transformTopLevelStmt -
  *	  transform a Parse tree into a Query tree.
@@ -1188,7 +1188,7 @@ count_rowexpr_columns(ParseState *pstate, Node *expr)
 	return -1;
 }
 
-
+// 完成对SELECT语句的分析处理
 /*
  * transformSelectStmt -
  *	  transforms a Select Statement
@@ -1227,21 +1227,21 @@ transformSelectStmt(ParseState *pstate, SelectStmt *stmt)
 	/* make WINDOW info available for window functions, too */
 	pstate->p_windowdefs = stmt->windowClause;
 
-	/* process the FROM clause */
+	/* process the FROM clause */	// 处理from子句
 	transformFromClause(pstate, stmt->fromClause);
 
-	/* transform targetlist */
+	/* transform targetlist */	// 处理目标列子句
 	qry->targetList = transformTargetList(pstate, stmt->targetList,
 										  EXPR_KIND_SELECT_TARGET);
 
 	/* mark column origins */
 	markTargetListOrigins(pstate, qry->targetList);
 
-	/* transform WHERE */
+	/* transform WHERE */	// 处理where子句
 	qual = transformWhereClause(pstate, stmt->whereClause,
 								EXPR_KIND_WHERE, "WHERE");
 
-	/* initial processing of HAVING clause is much like WHERE clause */
+	/* initial processing of HAVING clause is much like WHERE clause */	// 处理having子句
 	qry->havingQual = transformWhereClause(pstate, stmt->havingClause,
 										   EXPR_KIND_HAVING, "HAVING");
 

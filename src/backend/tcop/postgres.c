@@ -663,7 +663,7 @@ pg_parse_query(const char *query_string)
 
 	return raw_parsetree_list;
 }
-
+// 完成原始语法树到查询语法树的转换以及依据规则的改写工作
 /*
  * Given a raw parsetree (gram.y output), and optionally information about
  * types of parameter symbols ($n), perform parse analysis and rule rewriting.

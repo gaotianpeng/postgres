@@ -59,7 +59,7 @@ static List *ExpandRowReference(ParseState *pstate, Node *expr,
 								bool make_target_entry);
 static int	FigureColnameInternal(Node *node, char **name);
 
-
+// 非 * 类型的目标列(Target Column)的转换
 /*
  * transformTargetEntry()
  *	Transform any ordinary "expression-type" node into a targetlist entry.
@@ -1100,7 +1100,7 @@ checkInsertTargets(ParseState *pstate, List *cols, List **attrnos)
 
 	return cols;
 }
-
+// 将*转换为其代表的确切的目标列
 /*
  * ExpandColumnRefStar()
  *		Transforms foo.* into a list of expressions or targetlist entries.

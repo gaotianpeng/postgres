@@ -744,7 +744,7 @@ scanNSItemForColumn(ParseState *pstate, ParseNamespaceItem *nsitem,
 
 	return (Node *) var;
 }
-
+// 完成目标列归属于哪个基表的明确性检查
 /*
  * scanRTEForColumn
  *	  Search the column names of a single RTE for the given name.
