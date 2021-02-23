@@ -26,7 +26,7 @@
  *						node definitions
  * ----------------------------------------------------------------
  */
-
+// 描述了优化器的最终产品：优化后的语句，该语句是后续的执行器完成工作的基础
 /* ----------------
  *		PlannedStmt node
  *
@@ -45,11 +45,11 @@ typedef struct PlannedStmt
 
 	CmdType		commandType;	/* select|insert|update|delete|utility */
 
-	uint64		queryId;		/* query identifier (copied from Query) */
+	uint64		queryId;		/* query identifier (copied from Query) */	// 查询编号 id
 
-	bool		hasReturning;	/* is it insert|update|delete RETURNING? */
+	bool		hasReturning;	/* is it insert|update|delete RETURNING? */	// 是否存在returning语句
 
-	bool		hasModifyingCTE;	/* has insert|update|delete in WITH? */
+	bool		hasModifyingCTE;	/* has insert|update|delete in WITH? */	// with语句中是否存在insert等
 
 	bool		canSetTag;		/* do I set the command result tag? */
 
@@ -61,29 +61,29 @@ typedef struct PlannedStmt
 
 	int			jitFlags;		/* which forms of JIT should be performed */
 
-	struct Plan *planTree;		/* tree of Plan nodes */
+	struct Plan *planTree;		/* tree of Plan nodes */	// 查询计划树
 
-	List	   *rtable;			/* list of RangeTblEntry nodes */
+	List	   *rtable;			/* list of RangeTblEntry nodes */	// 范围表
 
 	/* rtable indexes of target relations for INSERT/UPDATE/DELETE */
-	List	   *resultRelations;	/* integer list of RT indexes, or NIL */
+	List	   *resultRelations;	/* integer list of RT indexes, or NIL */	// 范围表索引编号列表
 
 	List	   *appendRelations;	/* list of AppendRelInfo nodes */
 
 	List	   *subplans;		/* Plan trees for SubPlan expressions; note
-								 * that some could be NULL */
+								 * that some could be NULL */	// 子查询表达式
 
 	Bitmapset  *rewindPlanIDs;	/* indices of subplans that require REWIND */
 
 	List	   *rowMarks;		/* a list of PlanRowMark's */
 
-	List	   *relationOids;	/* OIDs of relations the plan depends on */
+	List	   *relationOids;	/* OIDs of relations the plan depends on */	// 查询计划依赖的藏青的OID信息
 
 	List	   *invalItems;		/* other dependencies, as PlanInvalItems */
 
 	List	   *paramExecTypes; /* type OIDs for PARAM_EXEC Params */
 
-	Node	   *utilityStmt;	/* non-null if this is utility stmt */
+	Node	   *utilityStmt;	/* non-null if this is utility stmt */	// 工具语句
 
 	/* statement location in source string (copied from Query) */
 	int			stmt_location;	/* start location, or -1 if unknown */
@@ -114,14 +114,14 @@ typedef struct Plan
 	/*
 	 * estimated execution costs for plan (see costsize.c for more info)
 	 */
-	Cost		startup_cost;	/* cost expended before fetching any tuples */
-	Cost		total_cost;		/* total cost (assuming all tuples fetched) */
+	Cost		startup_cost;	/* cost expended before fetching any tuples */	// 启动代价
+	Cost		total_cost;		/* total cost (assuming all tuples fetched) */	// 总代价
 
 	/*
 	 * planner's estimate of result size of this plan step
 	 */
-	double		plan_rows;		/* number of rows plan is expected to emit */
-	int			plan_width;		/* average row width in bytes */
+	double		plan_rows;		/* number of rows plan is expected to emit */	// 期望输出记录数量
+	int			plan_width;		/* average row width in bytes */	// 期望的结果宽度
 
 	/*
 	 * information needed for parallel query
@@ -134,8 +134,8 @@ typedef struct Plan
 	 */
 	int			plan_node_id;	/* unique across entire final plan tree */
 	List	   *targetlist;		/* target list to be computed at this node */
-	List	   *qual;			/* implicitly-ANDed qual conditions */
-	struct Plan *lefttree;		/* input plan tree(s) */
+	List	   *qual;			/* implicitly-ANDed qual conditions */	// 条件信息，以and形式
+	struct Plan *lefttree;		/* input plan tree(s) */	// 左右查询计划子树
 	struct Plan *righttree;
 	List	   *initPlan;		/* Init Plan nodes (un-correlated expr
 								 * subselects) */

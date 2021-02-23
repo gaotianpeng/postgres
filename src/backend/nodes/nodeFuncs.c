@@ -1788,7 +1788,7 @@ check_functions_in_node(Node *node, check_function_callback checker,
 	return false;
 }
 
-
+// 执行对查询树的遍历操作
 /*
  * Standard expression-tree walking support
  *

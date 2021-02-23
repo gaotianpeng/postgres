@@ -88,7 +88,7 @@ typedef enum InheritanceKind
 	INHKIND_INHERITED,
 	INHKIND_PARTITIONED
 } InheritanceKind;
-
+// 记录了postgresql优化过程中的全局状态信息
 /*----------
  * PlannerGlobal
  *		Global information for planning/optimization
@@ -165,16 +165,16 @@ typedef struct PlannerGlobal
 typedef struct PlannerInfo PlannerInfo;
 #define HAVE_PLANNERINFO_TYPEDEF 1
 #endif
-
+// 记录了在查询计划生成和优化的过程中需要的信息，保存优化器在工作时除了原有的原始查询树的其他状态信息
 struct PlannerInfo
 {
 	NodeTag		type;
 
-	Query	   *parse;			/* the Query being planned */
+	Query	   *parse;			/* the Query being planned */	// 原始的查询树
 
-	PlannerGlobal *glob;		/* global info for current planner run */
+	PlannerGlobal *glob;		/* global info for current planner run */	// 全局信息
 
-	Index		query_level;	/* 1 at the outermost Query */
+	Index		query_level;	/* 1 at the outermost Query */	// 查询层级编号
 
 	PlannerInfo *parent_root;	/* NULL at outermost Query */
 
@@ -194,15 +194,15 @@ struct PlannerInfo
 	 * does not correspond to a base relation, such as a join RTE or an
 	 * unreferenced view RTE; or if the RelOptInfo hasn't been made yet.
 	 */
-	struct RelOptInfo **simple_rel_array;	/* All 1-rel RelOptInfos */
-	int			simple_rel_array_size;	/* allocated size of array */
+	struct RelOptInfo **simple_rel_array;	/* All 1-rel RelOptInfos */	// 最优路径寻找时，保存所有基表信息的数组
+	int			simple_rel_array_size;	/* allocated size of array */	// 描述上述数组的大小
 
 	/*
 	 * simple_rte_array is the same length as simple_rel_array and holds
 	 * pointers to the associated rangetable entries.  Using this is a shade
 	 * faster than using rt_fetch(), mostly due to fewer indirections.
 	 */
-	RangeTblEntry **simple_rte_array;	/* rangetable as an array */
+	RangeTblEntry **simple_rte_array;	/* rangetable as an array */	// 保存RangeTblEntry类型
 
 	/*
 	 * append_rel_array is the same length as the above arrays, and holds
@@ -218,7 +218,7 @@ struct PlannerInfo
 	 * we need to form.  This is computed in make_one_rel, just before we
 	 * start making Paths.
 	 */
-	Relids		all_baserels;
+	Relids		all_baserels;	// 所有基表relids集合
 
 	/*
 	 * nullable_baserels is a Relids set of base relids that are nullable by
@@ -226,7 +226,7 @@ struct PlannerInfo
 	 * nullable below the WHERE clause, SELECT targetlist, etc.  This is
 	 * computed in deconstruct_jointree.
 	 */
-	Relids		nullable_baserels;
+	Relids		nullable_baserels;	// 在jointree中外连接的非空基表集合
 
 	/*
 	 * join_rel_list is a list of all join-relation RelOptInfos we have
@@ -237,9 +237,13 @@ struct PlannerInfo
 	 * even when using the hash table for lookups; this simplifies life for
 	 * GEQO.
 	 */
-	List	   *join_rel_list;	/* list of join-relation RelOptInfos */
-	struct HTAB *join_rel_hash; /* optional hashtable for join relations */
-
+	List	   *join_rel_list;	/* list of join-relation RelOptInfos */	// 所有具有连接关系的基表信息
+	struct HTAB *join_rel_hash; /* optional hashtable for join relations */	// 为了加快查找上述的join_rel_list对象而使用的hashtable
+	
+	/*
+		在最优查询访问路径寻找过程中，我们采用动态规划算法完成最优路径求解连接关系
+		下面这些参数在动态规划过程中使用
+	*/
 	/*
 	 * When doing a dynamic-programming-style join search, join_rel_level[k]
 	 * is a list of all join-relation RelOptInfos of level k, and
@@ -247,22 +251,22 @@ struct PlannerInfo
 	 * automatically added to the join_rel_level[join_cur_level] list.
 	 * join_rel_level is NULL if not in use.
 	 */
-	List	  **join_rel_level; /* lists of join-relation RelOptInfos */
-	int			join_cur_level; /* index of list being extended */
+	List	  **join_rel_level; /* lists of join-relation RelOptInfos */	// 当前处理层级信息
+	int			join_cur_level; /* index of list being extended */	// 初始子连接
 
-	List	   *init_plans;		/* init SubPlans for query */
+	List	   *init_plans;		/* init SubPlans for query */	// cte的子查询编号
 
-	List	   *cte_plan_ids;	/* per-CTE-item list of subplan IDs */
+	List	   *cte_plan_ids;	/* per-CTE-item list of subplan IDs */	// 等值语句
 
 	List	   *multiexpr_params;	/* List of Lists of Params for MULTIEXPR
 									 * subquery outputs */
 
-	List	   *eq_classes;		/* list of active EquivalenceClasses */
+	List	   *eq_classes;		/* list of active EquivalenceClasses */	// 规范化的pathkey
 
 	bool		ec_merging_done;	/* set true once ECs are canonical */
 
 	List	   *canon_pathkeys; /* list of "canonical" PathKeys */
-
+	// 左外连接和右外连接约束语句以及全连接约束语句
 	List	   *left_join_clauses;	/* list of RestrictInfos for mergejoinable
 									 * outer join clauses w/nonnullable var on
 									 * left */
@@ -274,7 +278,7 @@ struct PlannerInfo
 	List	   *full_join_clauses;	/* list of RestrictInfos for mergejoinable
 									 * full join clauses */
 
-	List	   *join_info_list; /* list of SpecialJoinInfos */
+	List	   *join_info_list; /* list of SpecialJoinInfos */	// 具有顺序要求的连接情况
 
 	/*
 	 * Note: for AppendRelInfos describing partitions of a partitioned table,
@@ -323,26 +327,26 @@ struct PlannerInfo
 	List	   *minmax_aggs;	/* List of MinMaxAggInfos */
 
 	MemoryContext planner_cxt;	/* context holding PlannerInfo */
-
+	// 以下为代价估算信息
 	double		total_table_pages;	/* # of pages in all non-dummy tables of
-									 * query */
+									 * query */	// 总页表数量
 
-	double		tuple_fraction; /* tuple_fraction passed to query_planner */
-	double		limit_tuples;	/* limit_tuples passed to query_planner */
+	double		tuple_fraction; /* tuple_fraction passed to query_planner */	// 查询tuple比例描述
+	double		limit_tuples;	/* limit_tuples passed to query_planner */	// 标识位信息
 
 	Index		qual_security_level;	/* minimum security_level for quals */
 	/* Note: qual_security_level is zero if there are no securityQuals */
 
 	InheritanceKind inhTargetKind;	/* indicates if the target relation is an
 									 * inheritance child or partition or a
-									 * partitioned table */
+									 * partitioned table */	// 是否是继承表
 	bool		hasJoinRTEs;	/* true if any RTEs are RTE_JOIN kind */
-	bool		hasLateralRTEs; /* true if any RTEs are marked LATERAL */
+	bool		hasLateralRTEs; /* true if any RTEs are marked LATERAL */	// 是否存在Lateral类型基表
 	bool		hasHavingQual;	/* true if havingQual was non-null */
 	bool		hasPseudoConstantQuals; /* true if any RestrictInfo has
 										 * pseudoconstant = true */
 	bool		hasAlternativeSubPlans; /* true if we've made any of those */
-	bool		hasRecursion;	/* true if planning a recursive WITH item */
+	bool		hasRecursion;	/* true if planning a recursive WITH item */	// 是否含有with语句
 
 	/*
 	 * Information about aggregates. Filled by preprocess_aggrefs().
@@ -655,18 +659,22 @@ typedef enum RelOptKind
 	((rel)->reloptkind == RELOPT_OTHER_MEMBER_REL || \
 	 (rel)->reloptkind == RELOPT_OTHER_JOINREL || \
 	 (rel)->reloptkind == RELOPT_OTHER_UPPER_REL)
-
+/*
+	在查询规划阶段，通过我们需要将两个或多个基表进行连接操作，为这记录这些连接信息，构造RelOptInfo来保存这些连接信息
+	对于任意一个连接关系，pg将分别为连接关系中的每个基表创建一个RelOptInfo类型对象，并将基表之间的连接关系也由RelOptInfo进行表示
+	这些RelOptInfo对象会分别保存至PlannerInfo的simple_rel_array和join_rel_list中
+*/
 typedef struct RelOptInfo
 {
 	NodeTag		type;
 
-	RelOptKind	reloptkind;
+	RelOptKind	reloptkind;	// 基表类型
 
 	/* all relations included in this RelOptInfo */
-	Relids		relids;			/* set of base relids (rangetable indexes) */
+	Relids		relids;			/* set of base relids (rangetable indexes) */	// 基表的relids集合
 
 	/* size estimates generated by planner */
-	double		rows;			/* estimated number of result tuples */
+	double		rows;			/* estimated number of result tuples */	// 结果元组数量
 
 	/* per-relation planner control flags */
 	bool		consider_startup;	/* keep cheap-startup-cost paths? */
@@ -677,13 +685,13 @@ typedef struct RelOptInfo
 	struct PathTarget *reltarget;	/* list of Vars/Exprs, cost, width */
 
 	/* materialization information */
-	List	   *pathlist;		/* Path structures */
-	List	   *ppilist;		/* ParamPathInfos used in pathlist */
+	List	   *pathlist;		/* Path structures */	// 有效的可行查询访问路径
+	List	   *ppilist;		/* ParamPathInfos used in pathlist */	// 参数化路径信息
 	List	   *partial_pathlist;	/* partial Paths */
-	struct Path *cheapest_startup_path;
-	struct Path *cheapest_total_path;
-	struct Path *cheapest_unique_path;
-	List	   *cheapest_parameterized_paths;
+	struct Path *cheapest_startup_path;	// 最优启动代价的查询访问路径
+	struct Path *cheapest_total_path;	// 总代价最优查询访问路径
+	struct Path *cheapest_unique_path;	// 为产生唯一结果而缓存的最优查询访问路径
+	List	   *cheapest_parameterized_paths;	// 最优参数化查询访问路径
 
 	/* parameterization information needed for both base rels and join rels */
 	/* (see also lateral_vars and lateral_referencers) */
@@ -691,19 +699,19 @@ typedef struct RelOptInfo
 	Relids		lateral_relids; /* minimum parameterization of rel */
 
 	/* information about a base rel (not set for join rels!) */
-	Index		relid;
-	Oid			reltablespace;	/* containing tablespace */
-	RTEKind		rtekind;		/* RELATION, SUBQUERY, FUNCTION, etc */
-	AttrNumber	min_attr;		/* smallest attrno of rel (often <0) */
-	AttrNumber	max_attr;		/* largest attrno of rel */
-	Relids	   *attr_needed;	/* array indexed [min_attr .. max_attr] */
-	int32	   *attr_widths;	/* array indexed [min_attr .. max_attr] */
+	Index		relid;	// 基表的编号RTE索引
+	Oid			reltablespace;	/* containing tablespace */	// 表空间的oid
+	RTEKind		rtekind;		/* RELATION, SUBQUERY, FUNCTION, etc */	// 基表类型
+	AttrNumber	min_attr;		/* smallest attrno of rel (often <0) */	// 最小的属性编号
+	AttrNumber	max_attr;		/* largest attrno of rel */	// 最大的属性编号
+	Relids	   *attr_needed;	/* array indexed [min_attr .. max_attr] */	// 属性oid数组
+	int32	   *attr_widths;	/* array indexed [min_attr .. max_attr] */	// 属性大小数组
 	List	   *lateral_vars;	/* LATERAL Vars and PHVs referenced by rel */
 	Relids		lateral_referencers;	/* rels that reference me laterally */
-	List	   *indexlist;		/* list of IndexOptInfo */
+	List	   *indexlist;		/* list of IndexOptInfo */	// 基表上的索引信息
 	List	   *statlist;		/* list of StatisticExtInfo */
-	BlockNumber pages;			/* size estimates derived from pg_class */
-	double		tuples;
+	BlockNumber pages;			/* size estimates derived from pg_class */	// 页表大小
+	double		tuples;		// 元组数量
 	double		allvisfrac;
 	Bitmapset  *eclass_indexes; /* Indexes in PlannerInfo's eq_classes list of
 								 * ECs that mention this rel */
@@ -716,7 +724,7 @@ typedef struct RelOptInfo
 	Oid			userid;			/* identifies user to check access as */
 	bool		useridiscurrent;	/* join is only valid for current user */
 	/* use "struct FdwRoutine" to avoid including fdwapi.h here */
-	struct FdwRoutine *fdwroutine;
+	struct FdwRoutine *fdwroutine;	// 外表信息
 	void	   *fdw_private;
 
 	/* cache space for remembering if we have proven this relation unique */
@@ -725,13 +733,13 @@ typedef struct RelOptInfo
 	List	   *non_unique_for_rels;	/* known not unique for these set(s) */
 
 	/* used by various scans and joins: */
-	List	   *baserestrictinfo;	/* RestrictInfo structures (if base rel) */
-	QualCost	baserestrictcost;	/* cost of evaluating the above */
+	List	   *baserestrictinfo;	/* RestrictInfo structures (if base rel) */	// 基表上非连接的条件语句
+	QualCost	baserestrictcost;	/* cost of evaluating the above */	// 关于baserestrictinfo的代价信息
 	Index		baserestrict_min_security;	/* min security_level found in
 											 * baserestrictinfo */
 	List	   *joininfo;		/* RestrictInfo structures for join clauses
-								 * involving this rel */
-	bool		has_eclass_joins;	/* T means joininfo is incomplete */
+								 * involving this rel */	// 涉及连接的基表上的约束语句
+	bool		has_eclass_joins;	/* T means joininfo is incomplete */	// 等式连接情况
 
 	/* used by partitionwise joins: */
 	bool		consider_partitionwise_join;	/* consider partitionwise join
@@ -1020,7 +1028,7 @@ typedef struct EquivalenceMember
 	bool		em_is_child;	/* derived version for a child relation? */
 	Oid			em_datatype;	/* the "nominal type" used by the opfamily */
 } EquivalenceMember;
-
+// 路径排序信息
 /*
  * PathKeys
  *
@@ -1042,10 +1050,10 @@ typedef struct PathKey
 {
 	NodeTag		type;
 
-	EquivalenceClass *pk_eclass;	/* the value that is ordered */
-	Oid			pk_opfamily;	/* btree opfamily defining the ordering */
-	int			pk_strategy;	/* sort direction (ASC or DESC) */
-	bool		pk_nulls_first; /* do NULLs come before normal values? */
+	EquivalenceClass *pk_eclass;	/* the value that is ordered */	// 需排序的值
+	Oid			pk_opfamily;	/* btree opfamily defining the ordering */	// 排序操作的btree操作族信息
+	int			pk_strategy;	/* sort direction (ASC or DESC) */	// 排序操作，升序或者降序
+	bool		pk_nulls_first; /* do NULLs come before normal values? */	// NULL值是否排在普通值之前
 } PathKey;
 
 
@@ -1109,7 +1117,7 @@ typedef struct ParamPathInfo
 	List	   *ppi_clauses;	/* join clauses available from outer rels */
 } ParamPathInfo;
 
-
+// 通常作为顺序扫描(Sequential Scan Path)的代名词，有时也等同那些无须知道确切信息的简单查询计划
 /*
  * Type "Path" is used as-is for sequential-scan paths, as well as some other
  * simple plan types that we don't need any extra information in the path for.
@@ -1143,9 +1151,9 @@ typedef struct Path
 {
 	NodeTag		type;
 
-	NodeTag		pathtype;		/* tag identifying scan/join method */
+	NodeTag		pathtype;		/* tag identifying scan/join method */	// 用来表明其是Scan操作还是Join操作
 
-	RelOptInfo *parent;			/* the relation this path can build */
+	RelOptInfo *parent;			/* the relation this path can build */	// 构成该路径的藏青信息
 	PathTarget *pathtarget;		/* list of Vars/Exprs, cost, width */
 
 	ParamPathInfo *param_info;	/* parameterization info, or NULL if none */
@@ -1155,11 +1163,11 @@ typedef struct Path
 	int			parallel_workers;	/* desired # of workers; 0 = not parallel */
 
 	/* estimated size/costs for path (see costsize.c for more info) */
-	double		rows;			/* estimated number of result tuples */
-	Cost		startup_cost;	/* cost expended before fetching any tuples */
-	Cost		total_cost;		/* total cost (assuming all tuples fetched) */
+	double		rows;			/* estimated number of result tuples */	// 该路径的结果元组大小
+	Cost		startup_cost;	/* cost expended before fetching any tuples */	// 启动代价
+	Cost		total_cost;		/* total cost (assuming all tuples fetched) */	// 总代价
 
-	List	   *pathkeys;		/* sort ordering of path's output */
+	List	   *pathkeys;		/* sort ordering of path's output */	// 该路径输出结果的排序情况
 	/* pathkeys is a List of PathKey nodes; see above */
 } Path;
 
@@ -1840,7 +1848,7 @@ typedef struct LimitPath
 	LimitOption limitOption;	/* FETCH FIRST with ties or exact number */
 } LimitPath;
 
-
+// 约束条件(WHERE或者JOIN/ON语句)中的每个AND子句均创建一个RestricInfo类型对象
 /*
  * Restriction clause info.
  *
@@ -1985,13 +1993,13 @@ typedef struct RestrictInfo
 {
 	NodeTag		type;
 
-	Expr	   *clause;			/* the represented clause of WHERE or JOIN */
+	Expr	   *clause;			/* the represented clause of WHERE or JOIN */	// 约束条件语句where或都join语句
 
-	bool		is_pushed_down; /* true if clause was pushed down in level */
+	bool		is_pushed_down; /* true if clause was pushed down in level */	// 该条件语句是否可以下推
 
-	bool		outerjoin_delayed;	/* true if delayed by lower outer join */
+	bool		outerjoin_delayed;	/* true if delayed by lower outer join */	// 是否可由底层的外连接延后处理
 
-	bool		can_join;		/* see comment above */
+	bool		can_join;		/* see comment above */	// 是否可以构成Join关系
 
 	bool		pseudoconstant; /* see comment above */
 
@@ -2000,26 +2008,26 @@ typedef struct RestrictInfo
 	Index		security_level; /* see comment above */
 
 	/* The set of relids (varnos) actually referenced in the clause: */
-	Relids		clause_relids;
+	Relids		clause_relids;	// 条件语句涉及的基表relids
 
 	/* The set of relids required to evaluate the clause: */
-	Relids		required_relids;
+	Relids		required_relids;	// 该条件语句求值时需要的基表relids
 
 	/* If an outer-join clause, the outer-side relations, else NULL: */
-	Relids		outer_relids;
+	Relids		outer_relids;	// 外连接基表的relids
 
 	/* The relids used in the clause that are nullable by lower outer joins: */
-	Relids		nullable_relids;
+	Relids		nullable_relids;	// 低层的外连接用到的在条件语句中可为null的基表relids
 
 	/* These fields are set for any binary opclause: */
-	Relids		left_relids;	/* relids in left side of clause */
-	Relids		right_relids;	/* relids in right side of clause */
+	Relids		left_relids;	/* relids in left side of clause */	// 语句的左部中基表relids
+	Relids		right_relids;	/* relids in right side of clause */	// 语句的右部中基表relids
 
 	/* This field is NULL unless clause is an OR clause: */
-	Expr	   *orclause;		/* modified clause with RestrictInfos */
+	Expr	   *orclause;		/* modified clause with RestrictInfos */	// 为NULL，除非该语句为OR语句
 
 	/* This field is NULL unless clause is potentially redundant: */
-	EquivalenceClass *parent_ec;	/* generating EquivalenceClass */
+	EquivalenceClass *parent_ec;	/* generating EquivalenceClass */	// 为NULL，除非该语句有可能为冗余条件语句选择率相关信息
 
 	/* cache space for cost and selectivity */
 	QualCost	eval_cost;		/* eval cost of clause; -1 if not yet set */
@@ -2027,20 +2035,20 @@ typedef struct RestrictInfo
 								 * semantics; -1 if not yet set; >1 means a
 								 * redundant clause */
 	Selectivity outer_selec;	/* selectivity for outer join semantics; -1 if
-								 * not yet set */
+								 * not yet set */	// 为mergejoin相关信息
 
 	/* valid if clause is mergejoinable, else NIL */
-	List	   *mergeopfamilies;	/* opfamilies containing clause operator */
+	List	   *mergeopfamilies;	/* opfamilies containing clause operator */	// mergejoin操作符的族信息
 
 	/* cache space for mergeclause processing; NULL if not yet set */
-	EquivalenceClass *left_ec;	/* EquivalenceClass containing lefthand */
-	EquivalenceClass *right_ec; /* EquivalenceClass containing righthand */
-	EquivalenceMember *left_em; /* EquivalenceMember for lefthand */
-	EquivalenceMember *right_em;	/* EquivalenceMember for righthand */
+	EquivalenceClass *left_ec;	/* EquivalenceClass containing lefthand */	// 等式语句中的左部
+	EquivalenceClass *right_ec; /* EquivalenceClass containing righthand */	// 等式语句中的右部
+	EquivalenceMember *left_em; /* EquivalenceMember for lefthand */	// 等式语句中的左部表达式
+	EquivalenceMember *right_em;	/* EquivalenceMember for righthand */	// 等式语句中的右部表达式
 	List	   *scansel_cache;	/* list of MergeScanSelCache structs */
 
 	/* transient workspace for use while considering a specific join path */
-	bool		outer_is_left;	/* T = outer var on left, F = on right */
+	bool		outer_is_left;	/* T = outer var on left, F = on right */	// 外变量在语句的左部还是右部
 
 	/* valid if clause is hashjoinable, else InvalidOid: */
 	Oid			hashjoinoperator;	/* copy of clause operator */

@@ -936,7 +936,7 @@ pg_plan_query(Query *querytree, const char *query_string, int cursorOptions,
 
 	return plan;
 }
-
+// 负责查询语句的优化与查询计划的生成
 /*
  * Generate plans for a list of already-rewritten queries.
  *

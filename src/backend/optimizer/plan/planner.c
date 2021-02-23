@@ -273,7 +273,7 @@ planner(Query *parse, const char *query_string, int cursorOptions,
 		result = standard_planner(parse, query_string, cursorOptions, boundParams);
 	return result;
 }
-
+// 标准版的查询优化器，通过遍历查询语法树来查找可能的优化点，并完成对查询语法树的基于关系代数的变换
 PlannedStmt *
 standard_planner(Query *parse, const char *query_string, int cursorOptions,
 				 ParamListInfo boundParams)
