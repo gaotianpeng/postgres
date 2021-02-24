@@ -764,7 +764,7 @@ subquery_planner(PlannerGlobal *glob, Query *parse,
 	 */
 	parse->targetList = (List *)
 		preprocess_expression(root, (Node *) parse->targetList,
-							  EXPRKIND_TARGET);
+							  EXPRKIND_TARGET);	// 目标列处理
 
 	/* Constant-folding might have removed all set-returning functions */
 	if (parse->hasTargetSRFs)
@@ -784,9 +784,9 @@ subquery_planner(PlannerGlobal *glob, Query *parse,
 
 	parse->returningList = (List *)
 		preprocess_expression(root, (Node *) parse->returningList,
-							  EXPRKIND_TARGET);
+							  EXPRKIND_TARGET);	// returning语句处理
 
-	preprocess_qual_conditions(root, (Node *) parse->jointree);
+	preprocess_qual_conditions(root, (Node *) parse->jointree);	// 处理条件语句
 
 	parse->havingQual = preprocess_expression(root, parse->havingQual,
 											  EXPRKIND_QUAL);
