@@ -25,7 +25,7 @@
  */
 typedef enum NodeTag
 {
-	T_Invalid = 0,
+	T_Invalid = 0,	// 所有不合法的结点都被标识为0值
 
 	/*
 	 * TAGS FOR EXECUTOR NODES (execnodes.h)
@@ -520,7 +520,7 @@ typedef enum NodeTag
 	T_SupportRequestRows,		/* in nodes/supportnodes.h */
 	T_SupportRequestIndexCondition	/* in nodes/supportnodes.h */
 } NodeTag;
-
+// 一个抽象的数据结构的头部结构，用以表示各种对象
 /*
  * The first field of a node of any type is guaranteed to be the NodeTag.
  * Hence the type of any node can be gotten by casting it to Node. Declaring
@@ -529,7 +529,7 @@ typedef enum NodeTag
  */
 typedef struct Node
 {
-	NodeTag		type;
+	NodeTag		type;	// 标识结点类型
 } Node;
 
 #define nodeTag(nodeptr)		(((const Node*)(nodeptr))->type)
@@ -663,7 +663,7 @@ extern bool equal(const void *a, const void *b);
 typedef double Selectivity;		/* fraction of tuples a qualifier will pass */
 typedef double Cost;			/* execution cost (in page-access units) */
 
-
+// 标识SQL语句类型的枚举结构
 /*
  * CmdType -
  *	  enums for type of operation represented by a Query or PlannedStmt
@@ -672,15 +672,15 @@ typedef double Cost;			/* execution cost (in page-access units) */
  */
 typedef enum CmdType
 {
-	CMD_UNKNOWN,
-	CMD_SELECT,					/* select stmt */
-	CMD_UPDATE,					/* update stmt */
-	CMD_INSERT,					/* insert stmt */
-	CMD_DELETE,
+	CMD_UNKNOWN,									// 命令类型未知
+	CMD_SELECT,					/* select stmt */	// 查询语句
+	CMD_UPDATE,					/* update stmt */	// 更新语句
+	CMD_INSERT,					/* insert stmt */	// 插入语句
+	CMD_DELETE,										// 删除语句
 	CMD_UTILITY,				/* cmds like create, destroy, copy, vacuum,
-								 * etc. */
+								 * etc. */	// 其他的诸如DDL等语句
 	CMD_NOTHING					/* dummy command for instead nothing rules
-								 * with qual */
+								 * with qual */	// 非用户发出的命令,需要PostgreSQL内部隐含处理的命令
 } CmdType;
 
 

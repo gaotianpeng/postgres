@@ -39,18 +39,18 @@
 
 #include "nodes/nodes.h"
 
-
+// List中的一个基本对象
 typedef union ListCell
 {
 	void	   *ptr_value;
 	int			int_value;
 	Oid			oid_value;
 } ListCell;
-
+// 抽象数据结构，用以存放各种对象，把多个对象组织成一个顺序的链表。但同一个List中存放的是同一类对象
 typedef struct List
 {
-	NodeTag		type;			/* T_List, T_IntList, or T_OidList */
-	int			length;			/* number of elements currently present */
+	NodeTag		type;			/* T_List, T_IntList, or T_OidList */	// 列表的类型
+	int			length;			/* number of elements currently present */	// 链表的长度
 	int			max_length;		/* allocated length of elements[] */
 	ListCell   *elements;		/* re-allocatable array of cells */
 	/* We may allocate some cells along with the List header: */

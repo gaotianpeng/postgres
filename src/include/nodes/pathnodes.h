@@ -627,8 +627,8 @@ typedef struct PartitionSchemeData *PartitionScheme;
  */
 typedef enum RelOptKind
 {
-	RELOPT_BASEREL,
-	RELOPT_JOINREL,
+	RELOPT_BASEREL,	// 基本关系表，单表或子查询的输出结果或出现在范围表表中的的“函数的输出结果”
+	RELOPT_JOINREL,	// 连接关系，两个或两个以上的表进行连接后得到的新关系
 	RELOPT_OTHER_MEMBER_REL,
 	RELOPT_OTHER_JOINREL,
 	RELOPT_UPPER_REL,
@@ -660,13 +660,15 @@ typedef enum RelOptKind
 	 (rel)->reloptkind == RELOPT_OTHER_JOINREL || \
 	 (rel)->reloptkind == RELOPT_OTHER_UPPER_REL)
 /*
+	表示处于优化阶段的被查询的“关系”对象，从属于PlannerInfo
+
 	在查询规划阶段，通过我们需要将两个或多个基表进行连接操作，为这记录这些连接信息，构造RelOptInfo来保存这些连接信息
 	对于任意一个连接关系，pg将分别为连接关系中的每个基表创建一个RelOptInfo类型对象，并将基表之间的连接关系也由RelOptInfo进行表示
 	这些RelOptInfo对象会分别保存至PlannerInfo的simple_rel_array和join_rel_list中
 */
 typedef struct RelOptInfo
 {
-	NodeTag		type;
+	NodeTag		type;	// T_RelOptInfo
 
 	RelOptKind	reloptkind;	// 基表类型
 
@@ -684,13 +686,22 @@ typedef struct RelOptInfo
 	/* default result targetlist for Paths scanning this relation */
 	struct PathTarget *reltarget;	/* list of Vars/Exprs, cost, width */
 
+	/*
+		通过subquery_planner函数调用make_one_rel生成各种path,通过set_cheapest函数求出本层最优的，然后赋值
+		(从pathlist中找出代价最小的startup路径和total路径，分别赋值cheapest_startup_path和cheapest_total_path)
+	*/
 	/* materialization information */
-	List	   *pathlist;		/* Path structures */	// 有效的可行查询访问路径
-	List	   *ppilist;		/* ParamPathInfos used in pathlist */	// 参数化路径信息
+	List	   *pathlist;		/* Path structures */	// 存放所有可能的路径(Path结构体)
+	List	   *ppilist;		/* ParamPathInfos used in pathlist */	// 被pathlist使用的参数化的信息(ParamPathInfo结构体)
 	List	   *partial_pathlist;	/* partial Paths */
-	struct Path *cheapest_startup_path;	// 最优启动代价的查询访问路径
-	struct Path *cheapest_total_path;	// 总代价最优查询访问路径
-	struct Path *cheapest_unique_path;	// 为产生唯一结果而缓存的最优查询访问路径
+	/*
+		生成路径的过程中,每当产生一个中间关系,都要估算它的大小、路径和代价
+		但局部最优未必会导致全局最优,在将本层得到的关系的最优路径整合到上层的路径生成过程中时,PostgreSQL
+		保留了3个较优的情况供上层生成最优路径选择使用
+	*/
+	struct Path *cheapest_startup_path;	// 路径的启动代价最优的路径
+	struct Path *cheapest_total_path;	// 路径的总的执行代价最优的路径
+	struct Path *cheapest_unique_path;	// 路径中存在“唯一”列值时对应的排序后的路径
 	List	   *cheapest_parameterized_paths;	// 最优参数化查询访问路径
 
 	/* parameterization information needed for both base rels and join rels */
@@ -708,7 +719,7 @@ typedef struct RelOptInfo
 	int32	   *attr_widths;	/* array indexed [min_attr .. max_attr] */	// 属性大小数组
 	List	   *lateral_vars;	/* LATERAL Vars and PHVs referenced by rel */
 	Relids		lateral_referencers;	/* rels that reference me laterally */
-	List	   *indexlist;		/* list of IndexOptInfo */	// 基表上的索引信息
+	List	   *indexlist;		/* list of IndexOptInfo */	// 本"关系"上存在的全部索引
 	List	   *statlist;		/* list of StatisticExtInfo */
 	BlockNumber pages;			/* size estimates derived from pg_class */	// 页表大小
 	double		tuples;		// 元组数量
@@ -818,18 +829,22 @@ typedef struct RelOptInfo
 typedef struct IndexOptInfo IndexOptInfo;
 #define HAVE_INDEXOPTINFO_TYPEDEF 1
 #endif
-
+// 索引的数据结构，第个索引对应一个IndexOptInfo
 struct IndexOptInfo
 {
-	NodeTag		type;
+	NodeTag		type;	// T_IndexOptInfo
 
-	Oid			indexoid;		/* OID of the index relation */
-	Oid			reltablespace;	/* tablespace of index (not table) */
-	RelOptInfo *rel;			/* back-link to index's table */
+	Oid			indexoid;		/* OID of the index relation */	// 索引对象的OID
+	Oid			reltablespace;	/* tablespace of index (not table) */	// 索引可以有独立的存储位置(表空间)
+	RelOptInfo *rel;			/* back-link to index's table */	// 索引基于的表
 
+	/*
+		pages和tuple源自pg_class系统表，值如得到更新，则查询执行计划会更为准确
+		在计算最优路径的每一个路径开销时使用
+	*/
 	/* index-size statistics (from pg_class and elsewhere) */
-	BlockNumber pages;			/* number of disk pages in index */
-	double		tuples;			/* number of index tuples in index */
+	BlockNumber pages;			/* number of disk pages in index */	// 索引的磁盘页的个数
+	double		tuples;			/* number of index tuples in index */	// 索引元组的个数
 	int			tree_height;	/* index tree height, or -1 if unknown */
 
 	/* index descriptor information */
@@ -869,8 +884,8 @@ struct IndexOptInfo
 	bool		amoptionalkey;	/* can query omit key for the first column? */
 	bool		amsearcharray;	/* can AM handle ScalarArrayOpExpr quals? */
 	bool		amsearchnulls;	/* can AM search for NULL/NOT NULL entries? */
-	bool		amhasgettuple;	/* does AM have amgettuple interface? */
-	bool		amhasgetbitmap; /* does AM have amgetbitmap interface? */
+	bool		amhasgettuple;	/* does AM have amgettuple interface? */	// 索引是否有获取元组的接口
+	bool		amhasgetbitmap; /* does AM have amgetbitmap interface? */	// 索引是否有获取bitmap的接口
 	bool		amcanparallel;	/* does AM support parallel scan? */
 	bool		amcanmarkpos;	/* does AM support mark/restore? */
 	/* Rather than include amapi.h here, we declare amcostestimate like this */

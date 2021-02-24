@@ -247,7 +247,7 @@ static bool group_by_has_partkey(RelOptInfo *input_rel,
 								 List *groupClause);
 static int	common_prefix_cmp(const void *a, const void *b);
 
-
+// 查询优化器入口
 /*****************************************************************************
  *
  *	   Query optimizer entry point

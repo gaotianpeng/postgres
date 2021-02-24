@@ -107,12 +107,12 @@ typedef uint32 AclMode;			/* a bitmask of privilege bits */
  */
 typedef struct Query
 {
-	NodeTag		type;
+	NodeTag		type;		// T_Query
 
 	CmdType		commandType;	/* select|insert|update|delete|utility */
-
+	/* 表示Query结构体形成是在语法分析阶段还是由查询重写模块生成 */
 	QuerySource querySource;	/* where did I come from? */
-
+								//
 	uint64		queryId;		/* query identifier (can be set by plugins) */
 
 	bool		canSetTag;		/* do I set the command result tag? */
@@ -121,51 +121,52 @@ typedef struct Query
 
 	int			resultRelation; /* rtable index of target relation for
 								 * INSERT/UPDATE/DELETE; 0 for SELECT */
-
-	bool		hasAggs;		/* has aggregates in tlist or havingQual */
-	bool		hasWindowFuncs; /* has window functions in tlist */
+	/* 各种类型的子句是否存在的标志*/
+	bool		hasAggs;		/* has aggregates in tlist or havingQual */	// 存在聚集函数或HAVING子句
+	bool		hasWindowFuncs; /* has window functions in tlist */	// 存在窗口函数
 	bool		hasTargetSRFs;	/* has set-returning functions in tlist */
-	bool		hasSubLinks;	/* has subquery SubLink */
-	bool		hasDistinctOn;	/* distinctClause is from DISTINCT ON */
-	bool		hasRecursive;	/* WITH RECURSIVE was specified */
-	bool		hasModifyingCTE;	/* has INSERT/UPDATE/DELETE in WITH */
-	bool		hasForUpdate;	/* FOR [KEY] UPDATE/SHARE was specified */
+	bool		hasSubLinks;	/* has subquery SubLink */	// 存在子查询式的子链接
+	bool		hasDistinctOn;	/* distinctClause is from DISTINCT ON */	// 存在DISTINCT ON操作
+	bool		hasRecursive;	/* WITH RECURSIVE was specified */	// 存在WITH RECURSIVE操作
+	bool		hasModifyingCTE;	/* has INSERT/UPDATE/DELETE in WITH */	// 在WITH操作中存在INSERT/UPDATE/DELETE操作
+	bool		hasForUpdate;	/* FOR [KEY] UPDATE/SHARE was specified */	// 存在FOR UPDATE或FOR SHARE操作
 	bool		hasRowSecurity; /* rewriter has applied some RLS policy */
-
-	List	   *cteList;		/* WITH list (of CommonTableExpr's) */
+	/* 以下表示各个子句的数据结构 */
+	List	   *cteList;		/* WITH list (of CommonTableExpr's) */	// WITH子句链表
 
 	List	   *rtable;			/* list of range table entries */	// 范围表列表
+	// 要进行连接的表，存放FROM和WHERE子句信息，其中的quals存放WHERE条件子句
 	FromExpr   *jointree;		/* table join tree (FROM and WHERE clauses) */
 
-	List	   *targetList;		/* target list (of TargetEntry) */	// 目标列子句
+	List	   *targetList;		/* target list (of TargetEntry) */	// 目标列子句(of TargetEntry)
 
 	OverridingKind override;	/* OVERRIDING clause */
 
 	OnConflictExpr *onConflict; /* ON CONFLICT DO [NOTHING | UPDATE] */
 
-	List	   *returningList;	/* return-values list (of TargetEntry) */	// 描述return子句
+	List	   *returningList;	/* return-values list (of TargetEntry) */	// 查询结棍返回值链表(of TargetEntry)
 
-	List	   *groupClause;	/* a list of SortGroupClause's */		// 描述分组子句
+	List	   *groupClause;	/* a list of SortGroupClause's */		// GROUPBY子句链表，使用SortGroupClause结构体表示链表的结点
 
 	List	   *groupingSets;	/* a list of GroupingSet's if present */
 
-	Node	   *havingQual;		/* qualifications applied to groups */	// 描述having子句
+	Node	   *havingQual;		/* qualifications applied to groups */	// GROUPBY子句的HAVING条件
 
-	List	   *windowClause;	/* a list of WindowClause's */	// 描述window子句
+	List	   *windowClause;	/* a list of WindowClause's */	// 窗口函数子句链表
 
-	List	   *distinctClause; /* a list of SortGroupClause's */
+	List	   *distinctClause; /* a list of SortGroupClause's */	// DISTINCT子句链表，使用SortGroupClause结构体表示链表的结点
 
-	List	   *sortClause;		/* a list of SortGroupClause's */	// 描述排序子句
+	List	   *sortClause;		/* a list of SortGroupClause's */	// ORDERBY子句链表，使用SortGroupClause结构表表示链表的结点
 
-	Node	   *limitOffset;	/* # of result tuples to skip (int8 expr) */
-	Node	   *limitCount;		/* # of result tuples to return (int8 expr) */
+	Node	   *limitOffset;	/* # of result tuples to skip (int8 expr) */	// LIMIT的OFFSET子句结点
+	Node	   *limitCount;		/* # of result tuples to return (int8 expr) */	// LIMIT限定的元组数的值
 	LimitOption limitOption;	/* limit type */
 
 	List	   *rowMarks;		/* a list of RowMarkClause's */
-
+	/* 是否是集合操作(UNION/INTERSECT/EXCEPT),在grouping_planner函数中作为主要判断条件区分集合操作和非集合操作*/
 	Node	   *setOperations;	/* set-operation tree if this is top level of
-								 * a UNION/INTERSECT/EXCEPT query */
-
+								 * a UNION/INTERSECT/EXCEPT query */ // 如果顶层SQL语句存在集合操作，则表示为集合操作树
+	/* 内部依赖关系链表，如表对象上的索引、触发器等都依赖表*/
 	List	   *constraintDeps; /* a list of pg_constraint OIDs that the query
 								 * depends on to be semantically valid */
 
@@ -974,9 +975,17 @@ typedef enum RTEKind
 								 * present during parsing or rewriting */
 } RTEKind;
 // 描述范围表，即通常描述的SQL查询语句中FROM子句给出的语法元素
+/*
+	是Query结构体的一个成员(List *rtable),是语法分析模块SQL查询语句解析后，得到的查询对象的信息
+	表示的是查询对象，或是一个普通关系(a plain relation),
+	或是一个FROM子句中出现的子查询(a sub-select in FROM)
+	或是连接子句的连接结果(result of a JOIN clause)
+
+	表示SQL语句被解析后的被查询的“关系”对象,从属于Query
+*/
 typedef struct RangeTblEntry
 {
-	NodeTag		type;
+	NodeTag		type;	// T_RangeTblEntry
 
 	RTEKind		rtekind;		/* see above */	// 类型信息
 
@@ -1005,8 +1014,8 @@ typedef struct RangeTblEntry
 	 * target table.  We leave such RTEs with their original lockmode so as to
 	 * avoid getting an additional, lesser lock.
 	 */
-	Oid			relid;			/* OID of the relation */	// 基表的OID
-	char		relkind;		/* relation kind (see pg_class.relkind) */
+	Oid			relid;			/* OID of the relation */	// 普通表的OID，值源自系统表pg_class的OID列
+	char		relkind;		/* relation kind (see pg_class.relkind) */	// 普通表的类型，值源自系统表pg_class的relkind列
 	int			rellockmode;	/* lock level that query requires on the rel */
 	struct TableSampleClause *tablesample;	/* sampling info, or NULL */
 
@@ -1014,6 +1023,11 @@ typedef struct RangeTblEntry
 	 * Fields valid for a subquery RTE (else NULL):
 	 */
 	Query	   *subquery;		/* the sub-query */		// 子查询
+	/*
+		值为true,表示subquery是视图重写后生成的子查询，不可再优化
+		不可再优化的原因不是从形式上看子查询不能被优化，而是出于安全的原因，如果优化可能违背在视图上定义的行级安全，
+		导致信息泄漏
+	*/
 	bool		security_barrier;	/* is from security_barrier view? */
 
 	/*
@@ -1053,7 +1067,7 @@ typedef struct RangeTblEntry
 	 */
 	JoinType	jointype;		/* type of join */		// 连接类型
 	int			joinmergedcols; /* number of merged (JOIN USING) columns */
-	List	   *joinaliasvars;	/* list of alias-var expansions */
+	List	   *joinaliasvars;	/* list of alias-var expansions */	// 别名列表，用Var结构体表示
 	List	   *joinleftcols;	/* left-side input column numbers */
 	List	   *joinrightcols;	/* right-side input column numbers */
 
@@ -1065,7 +1079,7 @@ typedef struct RangeTblEntry
 	 * implicit, and must be accounted for "by hand" in places such as
 	 * expandRTE().
 	 */
-	List	   *functions;		/* list of RangeTblFunction nodes */
+	List	   *functions;		/* list of RangeTblFunction nodes */	// 如果是function RTE子句，则表示其相关信息;否则值为NULL
 	bool		funcordinality; /* is this called WITH ORDINALITY? */
 
 	/*
@@ -1122,8 +1136,8 @@ typedef struct RangeTblEntry
 	bool		inh;			/* inheritance requested? */	// 是否是继承表
 	bool		inFromCl;		/* present in FROM clause? */	// 是否出现在FROM语句中
 	AclMode		requiredPerms;	/* bitmask of required access permissions */	// 访问控制信息
-	Oid			checkAsUser;	/* if valid, check access as this role */
-	Bitmapset  *selectedCols;	/* columns needing SELECT permission */
+	Oid			checkAsUser;	/* if valid, check access as this role */	// 执行SQL的用户是否合法将被检查
+	Bitmapset  *selectedCols;	/* columns needing SELECT permission */	// 列级权限中的SELECT权限信息，将被用于列级权限检查
 	Bitmapset  *insertedCols;	/* columns needing INSERT permission */
 	Bitmapset  *updatedCols;	/* columns needing UPDATE permission */
 	Bitmapset  *extraUpdatedCols;	/* generated columns being updated */

@@ -854,7 +854,7 @@ pg_rewrite_query(Query *query)
 	return querytree_list;
 }
 
-
+// 通过调用 planner 函数获得指定SQL语句的查询执行计划
 /*
  * Generate a plan for a single already-rewritten query.
  * This is a thin wrapper around planner() and takes the same parameters.
