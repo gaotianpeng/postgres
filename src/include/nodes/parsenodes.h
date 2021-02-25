@@ -217,7 +217,7 @@ typedef struct TypeName
 	List	   *arrayBounds;	/* array bounds */
 	int			location;		/* token location, or -1 if unknown */
 } TypeName;
-
+// 语法分析阶段将列属性用ColumnRef来表示，在语义分析阶段用Var来表示
 /*
  * ColumnRef - specifies a reference to a column, or possibly a whole tuple
  *
@@ -966,16 +966,17 @@ typedef enum RTEKind
 	RTE_SUBQUERY,				/* subquery in FROM */	// 子查询类型
 	RTE_JOIN,					/* join */	// 连接类型
 	RTE_FUNCTION,				/* function in FROM */	// 函数类型
-	RTE_TABLEFUNC,				/* TableFunc(.., column list) */
-	RTE_VALUES,					/* VALUES (<exprlist>), (<exprlist>), ... */	// values类型
-	RTE_CTE,					/* common table expr (WITH list element) */		// cte类型
-	RTE_NAMEDTUPLESTORE,		/* tuplestore, e.g. for AFTER triggers */
+	RTE_TABLEFUNC,				/* TableFunc(.., column list) */	// TABLE函数类型的表
+	RTE_VALUES,					/* VALUES (<exprlist>), (<exprlist>), ... */	// VALUES表达式产生的表
+	RTE_CTE,					/* common table expr (WITH list element) */		// WITH语句附带的公共表
+	RTE_NAMEDTUPLESTORE,		/* tuplestore, e.g. for AFTER triggers */	// 触发器使用
 	RTE_RESULT					/* RTE represents an empty FROM clause; such
 								 * RTEs are added by the planner, they're not
 								 * present during parsing or rewriting */
 } RTEKind;
 // 描述范围表，即通常描述的SQL查询语句中FROM子句给出的语法元素
 /*
+	简称RTE
 	是Query结构体的一个成员(List *rtable),是语法分析模块SQL查询语句解析后，得到的查询对象的信息
 	表示的是查询对象，或是一个普通关系(a plain relation),
 	或是一个FROM子句中出现的子查询(a sub-select in FROM)

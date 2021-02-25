@@ -2316,7 +2316,7 @@ expression_tree_walker(Node *node,
 	}
 	return false;
 }
-
+// 对查询树进行遍历
 /*
  * query_tree_walker --- initiate a walk of a Query's expressions
  *

@@ -177,22 +177,26 @@ typedef struct Expr
 /* Symbols for the indexes of the special RTE entries in rules */
 #define    PRS2_OLD_VARNO			1
 #define    PRS2_NEW_VARNO			2
-
+// 表示查询中涉及的表的列属性
 typedef struct Var
 {
 	Expr		xpr;
+	// 用来确定列属性所在的表的编号(Query->rtable中的rindex)
 	Index		varno;			/* index of this var's relation in the range
 								 * table, or INNER_VAR/OUTER_VAR/INDEX_VAR */
+	// 确定了这个列属性是表中的第几列
 	AttrNumber	varattno;		/* attribute number of this var, or zero for
 								 * all attrs ("whole-row Var") */
-	Oid			vartype;		/* pg_type OID for the type of this var */
-	int32		vartypmod;		/* pg_attribute typmod value */
+	Oid			vartype;		/* pg_type OID for the type of this var */	// 列属性对应的类型
+	int32		vartypmod;		/* pg_attribute typmod value */	// 列属性的精度(长度)
 	Oid			varcollid;		/* OID of collation, or InvalidOid if none */
+	// 列属性的相对位置
 	Index		varlevelsup;	/* for subquery variables referencing outer
 								 * relations; 0 in a normal var, >0 means N
 								 * levels up */
 	Index		varnosyn;		/* syntactic relation index (0 if unknown) */
 	AttrNumber	varattnosyn;	/* syntactic attribute number */
+	// 列属性出现在SQL语句中的位置
 	int			location;		/* token location, or -1 if unknown */
 } Var;
 
