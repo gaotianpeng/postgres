@@ -1,0 +1,11 @@
+1. 数据库集簇
+    pg管理的用户数据库及系统数据库的总称称为数据库集簇
+    pg安装后，做任何事情之前需先用initdb初始化数据库集簇
+
+2 初始化数据库集簇
+    创建包含数据库系统所有数据的数据目录
+    创建共享的系统表
+    创建其它的配置文件和控制文件
+    创建三个数据库:template1 template0 postgres
+        以后用户创建新的数据库时，template1里的所有内容都会copy过来
+        template0 和 postgres 都是通过copy template1 创建的
