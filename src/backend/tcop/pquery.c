@@ -115,7 +115,7 @@ FreeQueryDesc(QueryDesc *qdesc)
 	pfree(qdesc);
 }
 
-
+// 可优化SQL语句执行器入口函数
 /*
  * ProcessQuery
  *		Execute a single plannable query within a PORTAL_MULTI_QUERY,
@@ -192,7 +192,11 @@ ProcessQuery(PlannedStmt *plan,
 
 	FreeQueryDesc(queryDesc);
 }
-
+/*
+	执行策略选择器的主函数
+	in: 	PortalData的stmts链表
+	out:	执行策略枚举类型PortalStrategy
+*/
 /*
  * ChoosePortalStrategy
  *		Select portal execution strategy given the intended statement list.
@@ -402,7 +406,9 @@ FetchStatementTargetList(Node *stmt)
 	}
 	return NIL;
 }
-
+/*
+	对定义好的Portal进行初始化
+*/
 /*
  * PortalStart
  *		Prepare a portal for execution.
@@ -461,13 +467,14 @@ PortalStart(Portal portal, ParamListInfo params,
 		/*
 		 * Determine the portal execution strategy
 		 */
+		// 为Portal选择策略
 		portal->strategy = ChoosePortalStrategy(portal->stmts);
 
 		/*
 		 * Fire her up according to the strategy
 		 */
 		switch (portal->strategy)
-		{
+		{	// 如果是PORTAL_ONE_SELECT，调用CreateQueryDesc为Portal创建查询描述符
 			case PORTAL_ONE_SELECT:
 
 				/* Must set snapshot before starting executor. */
@@ -546,7 +553,9 @@ PortalStart(Portal portal, ParamListInfo params,
 				portal->atEnd = false;	/* allow fetches */
 				portal->portalPos = 0;
 				break;
-
+			/*
+				如果是PORTAL_UTIL_SELECT，为Portal创建返回元组的描述符
+			*/
 			case PORTAL_UTIL_SELECT:
 
 				/*
@@ -593,7 +602,7 @@ PortalStart(Portal portal, ParamListInfo params,
 	ActivePortal = saveActivePortal;
 	CurrentResourceOwner = saveResourceOwner;
 	PortalContext = savePortalContext;
-
+	// 设置Portal状态为PORTAL_READY, 表示Portal已经初始化好，准备开始执行
 	portal->status = PORTAL_READY;
 }
 
@@ -645,7 +654,9 @@ PortalSetResultFormat(Portal portal, int nFormats, int16 *formats)
 			portal->formats[i] = 0;
 	}
 }
-
+/*
+	按Portal中选择的策略调用相应的执行部件来执行Portal
+*/
 /*
  * PortalRun
  *		Run a portal's query or queries.

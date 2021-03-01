@@ -1179,7 +1179,7 @@ exec_simple_query(const char *query_string)
 
 		/* If we got a cancel signal in analysis or planning, quit */
 		CHECK_FOR_INTERRUPTS();
-
+		// 执行器入口
 		/*
 		 * Create unnamed portal to run the query or queries in. If there
 		 * already is one, silently drop it.

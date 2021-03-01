@@ -161,7 +161,10 @@ PortalGetPrimaryStmt(Portal portal)
 	}
 	return NULL;
 }
-
+/*
+	创建一个干净的Portal,其中内存上下文、资源跟踪器、清理函数等都已经设置好
+	sourceText、stmts等字段章节没有设置
+*/
 /*
  * CreatePortal
  *		Returns a new portal given a name.
@@ -248,7 +251,7 @@ CreateNewPortal(void)
 
 	return CreatePortal(portalname, false, false);
 }
-
+// 为Portal设置sourceText、stmts等字段
 /*
  * PortalDefineQuery
  *		A simple subroutine to establish a portal's query.
@@ -458,7 +461,7 @@ MarkPortalFailed(Portal portal)
 		portal->cleanup = NULL;
 	}
 }
-
+// 对Portal运行中所占用的资源进行释放，特别是用于缓存结果的资源
 /*
  * PortalDrop
  *		Destroy the portal.

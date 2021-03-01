@@ -469,7 +469,7 @@ CheckRestrictedOperation(const char *cmdname)
 				 errmsg("cannot execute %s within security-restricted operation",
 						cmdname)));
 }
-
+// 不可优化SQL语句执行器入口
 /*
  * ProcessUtility
  *		general utility function invoker

@@ -88,7 +88,7 @@
  */
 typedef enum PortalStrategy
 {
-	PORTAL_ONE_SELECT,
+	PORTAL_ONE_SELECT,	// 用来处理SELECT语句，该策略会调用执行器来执行
 	PORTAL_ONE_RETURNING,
 	PORTAL_ONE_MOD_WITH,
 	PORTAL_UTIL_SELECT,
@@ -111,12 +111,15 @@ typedef enum PortalStatus
 } PortalStatus;
 
 typedef struct PortalData *Portal;
-
+/*
+	执行策略选择器的工作是根据查询编译器给出的查询计划树链表来为当前查询选择执行策略
+	在这个过程中，执行策略选择器将会使用数据结构ProtalData来存储查询计划树链表以及最后选中的执行策略等信息
+*/
 typedef struct PortalData
 {
 	/* Bookkeeping data */
 	const char *name;			/* portal's name */
-	const char *prepStmtName;	/* source prepared statement (NULL if none) */
+	const char *prepStmtName;	/* source prepared statement (NULL if none) */	// 原始SQL语句
 	MemoryContext portalContext;	/* subsidiary memory for portal */
 	ResourceOwner resowner;		/* resources owned by portal */
 	void		(*cleanup) (Portal portal); /* cleanup hook */
@@ -135,28 +138,28 @@ typedef struct PortalData
 	const char *sourceText;		/* text of query (as of 8.4, never NULL) */
 	CommandTag	commandTag;		/* command tag for original query */
 	QueryCompletion qc;			/* command completion data for executed query */
-	List	   *stmts;			/* list of PlannedStmts */
+	List	   *stmts;			/* list of PlannedStmts */	// 由查询编译器输出的原子操作的链表
 	CachedPlan *cplan;			/* CachedPlan, if stmts are from one */
 
 	ParamListInfo portalParams; /* params to pass to query */
 	QueryEnvironment *queryEnv; /* environment for query */
 
 	/* Features/options */
-	PortalStrategy strategy;	/* see above */
+	PortalStrategy strategy;	/* see above */		// 为当前查询选择的执行策略
 	int			cursorOptions;	/* DECLARE CURSOR option bits */
 	bool		run_once;		/* portal will only be run once */
 
 	/* Status data */
-	PortalStatus status;		/* see above */
+	PortalStatus status;		/* see above */	// Portal的状态
 	bool		portalPinned;	/* a pinned portal can't be dropped */
 	bool		autoHeld;		/* was automatically converted from pinned to
 								 * held (see HoldPinnedPortals()) */
 
 	/* If not NULL, Executor is active; call ExecutorEnd eventually: */
-	QueryDesc  *queryDesc;		/* info needed for executor invocation */
+	QueryDesc  *queryDesc;		/* info needed for executor invocation */	// 查询描述符，存储执行查询所需的所有信息
 
 	/* If portal returns tuples, this is their tupdesc: */
-	TupleDesc	tupDesc;		/* descriptor for result tuples */
+	TupleDesc	tupDesc;		/* descriptor for result tuples */		// 描述可能的返回元组的结构
 	/* and these are the format codes to use for the columns: */
 	int16	   *formats;		/* a format code for each column */
 
