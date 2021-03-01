@@ -1,12 +1,30 @@
+bootstrap: 用于支持 bootstrap 运行模式，该模式主要用来创建初始的模板数据库
+main: 主程序模块，负责将控制权转到 postmaster 进程或 postgres 进程
+postmaster: 监听用户请求的守护进程，并控制 postgres 进程的启动和终止
+libpq: 处理与客户端间的通信，几乎所有的模块都依赖它
+tcop: postgres 服务进程的主要处理部分，调用 parser, optimizer, executor 和 commands 中的函数来执行
+    客户端提交的查询
+parser: 编译器，将SQL查询转化为内部查询树
+optimizer: 优化器，根据查询树创建最优的查询路径和查询计划
+executor: 执行器，执行来自 optimizer 的查询计划
+commands: 执行非计划查询的SQL命令，如创建表命令等
+catalog: 系统表操作，包含用于操作系统表的专用函数
+storage: 管理各种类型的存储系统(如磁盘)
+access: 提供各种存取方法，支持堆、索引等数据的存取
+nodes: 定义系统内部所用到的节点、链表等结构，以及处理这些结构的函数
+utils: 各种支持函数，如错误报告、各种初始化操作等
+regex: 正则表达式库及相关函数，用于支持正则表达式处理
+rewrite: 查询重写，根据规划系统对查询进行重写
+tsearch: 全文检索
+port: 平台兼容性处理相关的函数
+
+-------------------------------------------------------------------------------------------------
 src
     backend
         parser
         optimizer
         executor
         access
-
-
-
 
 src/backend/optimizer
     geqo: 遗传优化算法
