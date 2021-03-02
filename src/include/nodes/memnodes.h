@@ -71,8 +71,14 @@ typedef struct MemoryContextMethods
 	void		(*check) (MemoryContext context);
 #endif
 } MemoryContextMethods;
+/*
+	内存管理机制：运行时大多数内存分配操作在各种语义的内存上下文(MemoryContext)中进行
+	内存上下文释放时将会释放在其中分配的所有内存，可以通过释放内存上下文避免内存泄露
 
-
+	1) 调用 MemoryContextInit 创建 TopMemoryContext 和 ErrorContext
+	2) 调用 AllocSetContextCreate 以 TopMemoryContext为根节点创建 PostmasterContext
+	3) 将全局指针 CurrentMemoryContext 指向 PostmasterContext
+*/
 typedef struct MemoryContextData
 {
 	NodeTag		type;			/* identifies exact kind of context */

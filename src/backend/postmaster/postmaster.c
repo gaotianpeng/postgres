@@ -2893,7 +2893,10 @@ pmdie(SIGNAL_ARGS)
 
 	errno = save_errno;
 }
-
+/*
+ 	当系统中有子进程退出时，子进程会给 postmaster 发送一个 SIGCHLD 信号
+	postmaster 收到 SIGCHLD 信号后调用 reaper 函数清理退出的子进程
+*/
 /*
  * Reaper -- signal handler to cleanup after a child process dies.
  */

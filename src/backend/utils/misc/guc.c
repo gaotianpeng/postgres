@@ -5124,7 +5124,9 @@ get_guc_variables(void)
 	return guc_variables;
 }
 
-
+/*
+	统计参数个数并分配相应的 config_generic 类型的全局指针数组 guc_variables 以保存每个参数结构体的地址，并对该数组进行排序
+*/
 /*
  * Build the sorted array.  This is split out so that it could be
  * re-executed after startup (e.g., we could allow loadable modules to
@@ -5391,7 +5393,7 @@ guc_name_compare(const char *namea, const char *nameb)
 	return 0;
 }
 
-
+// 将参数设置为默认值
 /*
  * Initialize GUC options during program startup.
  *

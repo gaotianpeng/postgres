@@ -41,9 +41,9 @@ MemoryContext CurrentMemoryContext = NULL;
  * Standard top-level contexts. For a description of the purpose of each
  * of these contexts, refer to src/backend/utils/mmgr/README
  */
-MemoryContext TopMemoryContext = NULL;
-MemoryContext ErrorContext = NULL;
-MemoryContext PostmasterContext = NULL;
+MemoryContext TopMemoryContext = NULL;	// 在TopMemoryContext中分配的内存直到系统退出时才会释放
+MemoryContext ErrorContext = NULL;	// 错误恢复处理的永久性内存环境，恢复完毕则重设
+MemoryContext PostmasterContext = NULL;	// postmaster正常工作的内存环境，由它通过fork函数产生的子进程将会删除这个环境
 MemoryContext CacheMemoryContext = NULL;
 MemoryContext MessageContext = NULL;
 MemoryContext TopTransactionContext = NULL;

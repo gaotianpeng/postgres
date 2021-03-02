@@ -19,8 +19,8 @@
 
 
 /* Global variables */
-sigset_t	UnBlockSig,
-			BlockSig,
+sigset_t	UnBlockSig,	// 不希望屏蔽的信号集
+			BlockSig,	// 要屏蔽的信号集
 			StartupBlockSig;
 
 

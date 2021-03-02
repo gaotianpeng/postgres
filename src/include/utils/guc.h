@@ -67,13 +67,13 @@
  */
 typedef enum
 {
-	PGC_INTERNAL,
-	PGC_POSTMASTER,
-	PGC_SIGHUP,
+	PGC_INTERNAL,	// 参数只能通过内部进程设定，用户不能设定
+	PGC_POSTMASTER,	// 参数只能在 postmaster 启动时通过读配置文件或处理命令行参数来配置
+	PGC_SIGHUP,	// 参数只能在 postmaster 启动时配置，或当我们改变了配置文件并发送信号 SIGHUP 通知 postmaster 或 postgres的时候进行配置
 	PGC_SU_BACKEND,
 	PGC_BACKEND,
 	PGC_SUSET,
-	PGC_USERSET
+	PGC_USERSET	// 可以在任何时候配置
 } GucContext;
 
 /*
@@ -102,22 +102,26 @@ typedef enum
  *
  * NB: see GucSource_Names in guc.c if you change this.
  */
+/*
+	用于描述参数的来源，按照优先级从低到高的顺序排列
+	一个设置起作用当且公当先前的设置优先级比当前设置的优先级低或者相等
+*/
 typedef enum
 {
 	PGC_S_DEFAULT,				/* hard-wired default ("boot_val") */
 	PGC_S_DYNAMIC_DEFAULT,		/* default computed during initialization */
-	PGC_S_ENV_VAR,				/* postmaster environment variable */
-	PGC_S_FILE,					/* postgresql.conf */
-	PGC_S_ARGV,					/* postmaster command line */
+	PGC_S_ENV_VAR,				/* postmaster environment variable */	// 参数通过环境变量得到
+	PGC_S_FILE,					/* postgresql.conf */	// 读配置文件得到
+	PGC_S_ARGV,					/* postmaster command line */	// 从postmaster命令行参数得到
 	PGC_S_GLOBAL,				/* global in-database setting */
-	PGC_S_DATABASE,				/* per-database setting */
-	PGC_S_USER,					/* per-user setting */
+	PGC_S_DATABASE,				/* per-database setting */	// 数据库安装时指定
+	PGC_S_USER,					/* per-user setting */	// 用户指定
 	PGC_S_DATABASE_USER,		/* per-user-and-database setting */
-	PGC_S_CLIENT,				/* from client connection request */
-	PGC_S_OVERRIDE,				/* special case to forcibly set default */
+	PGC_S_CLIENT,				/* from client connection request */	// 通过客户端连接请求传过来的数据包指定
+	PGC_S_OVERRIDE,				/* special case to forcibly set default */	// 在特定情况下用来强制设定为默认值
 	PGC_S_INTERACTIVE,			/* dividing line for error reporting */
-	PGC_S_TEST,					/* test per-database or per-user setting */
-	PGC_S_SESSION				/* SET command */
+	PGC_S_TEST,					/* test per-database or per-user setting */	// 仅用于测试
+	PGC_S_SESSION				/* SET command */	// 通过 set 命令设定
 } GucSource;
 
 /*
