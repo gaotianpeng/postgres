@@ -1651,7 +1651,7 @@ ServerLoop(void)
 				last_touch_time;
 
 	last_lockfile_recheck_time = last_touch_time = time(NULL);
-
+	// 初始化 postmaster 所关心的读文件描述符集
 	nSockets = initMasks(&readmask);
 
 	for (;;)
@@ -1690,7 +1690,7 @@ ServerLoop(void)
 			DetermineSleepTime(&timeout);
 
 			PG_SETMASK(&UnBlockSig);
-
+			// 等待客户端提出连接请求
 			selres = select(nSockets, &rmask, NULL, NULL, &timeout);
 
 			PG_SETMASK(&BlockSig);
@@ -1723,7 +1723,7 @@ ServerLoop(void)
 				if (FD_ISSET(ListenSocket[i], &rmask))
 				{
 					Port	   *port;
-
+					// 创建一个 Port结构体
 					port = ConnCreate(ListenSocket[i]);
 					if (port)
 					{
@@ -4129,7 +4129,7 @@ TerminateChildren(int signal)
 	if (PgStatPID != 0)
 		signal_child(PgStatPID, signal);
 }
-
+// 根据 Port 结构体来启动一个 postgres 服务进程，为用户提供服务
 /*
  * BackendStartup -- start backend process
  *

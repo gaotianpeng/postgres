@@ -531,7 +531,10 @@ SysLoggerMain(int argc, char *argv[])
 		}
 	}
 }
-
+/*
+	SysLogger子进程通过一个管道从 postmaster、所有后台进程以及其他的子进程那里收集所有的stderr输出
+	并将这些输出写入到日志文件中
+*/
 /*
  * Postmaster subroutine to start a syslogger subprocess.
  */

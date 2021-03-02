@@ -25,7 +25,9 @@
  *		tuples are returned by a query to keep the backend and the
  *		"destination" portals synchronized.
  */
-
+/*
+	处理 postgres 和远端客户的一些消息通信操作，并负责返回命令的执行结果
+*/
 #include "postgres.h"
 
 #include "access/printsimple.h"

@@ -4312,7 +4312,7 @@ PostgresMain(int argc, char *argv[],
 
 			/* Report any recently-changed GUC options */
 			ReportChangedGUCOptions();
-
+			// 给客户端发送一条消息告诉客户端它已经准备好接收查询了
 			ReadyForQuery(whereToSendOutput);
 			send_ready_for_query = false;
 		}

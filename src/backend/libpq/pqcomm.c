@@ -132,12 +132,12 @@ static List *sock_paths = NIL;
 #define PQ_SEND_BUFFER_SIZE 8192
 #define PQ_RECV_BUFFER_SIZE 8192
 
-static char *PqSendBuffer;
+static char *PqSendBuffer;	// 大小为8192的输出缓冲区，用来接收服务器发送给客户端的消息
 static int	PqSendBufferSize;	/* Size send buffer */
 static int	PqSendPointer;		/* Next index to store a byte in PqSendBuffer */
 static int	PqSendStart;		/* Next index to send a byte in PqSendBuffer */
 
-static char PqRecvBuffer[PQ_RECV_BUFFER_SIZE];
+static char PqRecvBuffer[PQ_RECV_BUFFER_SIZE];	// 大小为8192字节的缓冲区，用来接收客户端发送给服务器的消息
 static int	PqRecvPointer;		/* Next index to read a byte from PqRecvBuffer */
 static int	PqRecvLength;		/* End of data available in PqRecvBuffer */
 
