@@ -153,28 +153,47 @@ struct HeapTupleHeaderData
 {
 	union
 	{
+		/* 
+			用于记录对元组执行 insert/delete 操作的事务ID和命令ID
+			这些信息主要用于并发控制时检查元组对事务的可见性
+		*/
 		HeapTupleFields t_heap;
+		/*
+			当一个新元组在内存中形成时，并不关心其事务可见性；因而只需用 DatumTupleFields 结构来记录元组长度等信息
+			在把该元组插入到表文件时，需要在元组头信息中记录插入该元组的事务和命令ID,此时会把 t_choice 所战友的内存转换为
+			HeapTupleFields结构并填充相应数据后再进行元组的插入
+		*/
 		DatumTupleFields t_datum;
 	}			t_choice;
 
+	/*
+		用于记录当前元组或者新元组的物理位置(块内偏移和元组长度)
+		若元组被更新，则记录的是新版本的元组的物理位置
+	*/
 	ItemPointerData t_ctid;		/* current TID of this or newer tuple (or a
 								 * speculative insertion token) */
 
 	/* Fields below here must match MinimalTupleData! */
-
+	/*
+		使用低11位表示当前元组的属性个数，其他位则用于包括用于HOT技术及元组可见性的标志位
+	*/
 #define FIELDNO_HEAPTUPLEHEADERDATA_INFOMASK2 2
 	uint16		t_infomask2;	/* number of attributes + various flags */
 
+	/*
+		用于标识元组当前的状态，比如元组是否具有OID,是否具有空属性等
+		t_infomask的每一位对应不同的状态一共16种状态
+	*/
 #define FIELDNO_HEAPTUPLEHEADERDATA_INFOMASK 3
 	uint16		t_infomask;		/* various flag bits, see below */
 
 #define FIELDNO_HEAPTUPLEHEADERDATA_HOFF 4
-	uint8		t_hoff;			/* sizeof header incl. bitmap, padding */
+	uint8		t_hoff;			/* sizeof header incl. bitmap, padding */	// 表示该元组头的大小
 
 	/* ^ - 23 bytes - ^ */
 
 #define FIELDNO_HEAPTUPLEHEADERDATA_BITS 5
-	bits8		t_bits[FLEXIBLE_ARRAY_MEMBER];	/* bitmap of NULLs */
+	bits8		t_bits[FLEXIBLE_ARRAY_MEMBER];	/* bitmap of NULLs */	// 用于标识该元组哪些字段为空
 
 	/* MORE DATA FOLLOWS AT END OF STRUCT */
 };

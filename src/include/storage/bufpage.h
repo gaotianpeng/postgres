@@ -160,6 +160,7 @@ typedef struct PageHeaderData
 	LocationIndex pd_special;	/* offset to start of special space */
 	uint16		pd_pagesize_version;
 	TransactionId pd_prune_xid; /* oldest prunable XID, or zero if none */
+	// 每个ItemIdData结构用来指向文件块中的一个元组
 	ItemIdData	pd_linp[FLEXIBLE_ARRAY_MEMBER]; /* line pointer array */
 } PageHeaderData;
 

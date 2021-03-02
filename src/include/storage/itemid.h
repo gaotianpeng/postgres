@@ -24,9 +24,9 @@
  */
 typedef struct ItemIdData
 {
-	unsigned	lp_off:15,		/* offset to tuple (from start of page) */
-				lp_flags:2,		/* state of line pointer, see below */
-				lp_len:15;		/* byte length of tuple */
+	unsigned	lp_off:15,		/* offset to tuple (from start of page) */	// 元组在文件块中的偏移量
+				lp_flags:2,		/* state of line pointer, see below */	// 表示元组的状态(分为未使用、正常使用、HOT重定向和死亡四种状态)
+				lp_len:15;		/* byte length of tuple */	// 该元组的长度
 } ItemIdData;
 
 typedef ItemIdData *ItemId;
