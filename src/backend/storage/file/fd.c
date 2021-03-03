@@ -69,7 +69,9 @@
  *
  *-------------------------------------------------------------------------
  */
-
+/*
+	实现了VFD管理以及通过VFD执行对实际物理文件的操作
+*/
 #include "postgres.h"
 
 #include <sys/file.h>
@@ -186,17 +188,25 @@ bool		data_sync_retry = false;
 
 typedef struct vfd
 {
-	int			fd;				/* current FD, or VFD_CLOSED if none */
+	int			fd;				/* current FD, or VFD_CLOSED if none */	// VFD 所对庆的真实文件描述符
+	/*
+		该虚拟文件描述符的标识位
+			如果它的第0位是1，即为 FD_DIRTY,表明该文件的内容已被修改过，但还没有被写回磁盘，在关闭此文件时要将该文件同步到磁盘里
+			如果它的第1位是1，即为 FD_TEMPORARY, 表明该文件在关闭时要被删除
+	*/
 	unsigned short fdstate;		/* bitflags for VFD's state */
 	ResourceOwner resowner;		/* owner, for automatic cleanup */
-	File		nextFree;		/* link to next free VFD, if in freelist */
-	File		lruMoreRecently;	/* doubly linked recency-of-use list */
-	File		lruLessRecently;
+	/*
+		
+	*/
+	File		nextFree;		/* link to next free VFD, if in freelist */	// 指向下一个空闲的 VFD
+	File		lruMoreRecently;	/* doubly linked recency-of-use list */	// 指向比该 VFD 最近更常用的虚拟文件描述符
+	File		lruLessRecently;	// 指向比该 VFD 最近更不常用的虚拟文件描述符
 	off_t		fileSize;		/* current size of file (0 if not temporary) */
 	char	   *fileName;		/* name of file, or NULL for unused VFD */
 	/* NB: fileName is malloc'd, and must be free'd when closing the VFD */
-	int			fileFlags;		/* open(2) flags for (re)opening the file */
-	mode_t		fileMode;		/* mode to pass to open(2) */
+	int			fileFlags;		/* open(2) flags for (re)opening the file */ // 表示文件打开时标志，包括只读、只写、读写等
+	mode_t		fileMode;		/* mode to pass to open(2) */	// 表示文件创建时指定的模式
 } Vfd;
 
 /*

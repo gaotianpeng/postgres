@@ -19,6 +19,9 @@
  *
  *-------------------------------------------------------------------------
  */
+/*
+	磁盘管理器
+*/
 #include "postgres.h"
 
 #include <unistd.h>
@@ -81,8 +84,8 @@
 
 typedef struct _MdfdVec
 {
-	File		mdfd_vfd;		/* fd number in fd.c's pool */
-	BlockNumber mdfd_segno;		/* segment number, from 0 */
+	File		mdfd_vfd;		/* fd number in fd.c's pool */	// 该磁盘文件对应的VFD的编号
+	BlockNumber mdfd_segno;		/* segment number, from 0 */	// 该磁盘文件对应的表文件段号
 } MdfdVec;
 
 static MemoryContext MdCxt;		/* context for all MdfdVec objects */

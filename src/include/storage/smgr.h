@@ -17,7 +17,9 @@
 #include "lib/ilist.h"
 #include "storage/block.h"
 #include "storage/relfilenode.h"
-
+/*
+	表示一个被打开的表文件
+*/
 /*
  * smgr.c maintains a table of SMgrRelation objects, which are essentially
  * cached file handles.  An SMgrRelation is created (if not already present)
