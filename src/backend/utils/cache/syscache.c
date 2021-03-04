@@ -113,11 +113,11 @@
  */
 struct cachedesc
 {
-	Oid			reloid;			/* OID of the relation being cached */
-	Oid			indoid;			/* OID of index relation for this cache */
-	int			nkeys;			/* # of keys needed for cache lookup */
-	int			key[4];			/* attribute numbers of key attrs */
-	int			nbuckets;		/* number of hash buckets for this cache */
+	Oid			reloid;			/* OID of the relation being cached */	// CatCache 对应的系统表 OID
+	Oid			indoid;			/* OID of index relation for this cache */	// CatCache 用到的索引 OID
+	int			nkeys;			/* # of keys needed for cache lookup */	// 查询关键字的个数
+	int			key[4];			/* attribute numbers of key attrs */	// 查询关键字的属性号
+	int			nbuckets;		/* number of hash buckets for this cache */	// 该CatCache需要的Hash桶数
 };
 
 static const struct cachedesc cacheinfo[] = {
@@ -993,7 +993,7 @@ static const struct cachedesc cacheinfo[] = {
 		2
 	}
 };
-
+// 存放最近使用过的系统表元组
 static CatCache *SysCache[SysCacheSize];
 
 static bool CacheInitialized = false;

@@ -46,15 +46,16 @@ typedef struct LockInfoData
 
 typedef LockInfoData *LockInfo;
 
+// 表示 Cache 中的表模式信息
 /*
  * Here are the contents of a relation cache entry.
  */
 
 typedef struct RelationData
 {
-	RelFileNode rd_node;		/* relation physical identifier */
+	RelFileNode rd_node;		/* relation physical identifier */	// 表的物理标识，包括表空间、数据库、表的OID
 	/* use "struct" here to avoid needing to include smgr.h: */
-	struct SMgrRelationData *rd_smgr;	/* cached file handle, or NULL */
+	struct SMgrRelationData *rd_smgr;	/* cached file handle, or NULL */	// 表的文件句柄
 	int			rd_refcnt;		/* reference count */
 	BackendId	rd_backend;		/* owning backend id, if temporary relation */
 	bool		rd_islocaltemp; /* rel is a temp rel of this session */
@@ -107,9 +108,9 @@ typedef struct RelationData
 												 * rd_node to any value */
 	SubTransactionId rd_droppedSubid;	/* dropped with another Subid set */
 
-	Form_pg_class rd_rel;		/* RELATION tuple */
-	TupleDesc	rd_att;			/* tuple descriptor */
-	Oid			rd_id;			/* relation's object id */
+	Form_pg_class rd_rel;		/* RELATION tuple */	// 表在 pg_class 系统表中对应的元组里的信息
+	TupleDesc	rd_att;			/* tuple descriptor */	// 表的元组描述符，描述了表的各个属性
+	Oid			rd_id;			/* relation's object id */	// 表的 OID
 	LockInfoData rd_lockInfo;	/* lock mgr's info for locking relation */
 	RuleLock   *rd_rules;		/* rewrite rules */
 	MemoryContext rd_rulescxt;	/* private memory cxt for rd_rules, if any */
@@ -135,7 +136,7 @@ typedef struct RelationData
 	MemoryContext rd_partcheckcxt;	/* private cxt for rd_partcheck, if any */
 
 	/* data managed by RelationGetIndexList: */
-	List	   *rd_indexlist;	/* list of OIDs of indexes on relation */
+	List	   *rd_indexlist;	/* list of OIDs of indexes on relation */	// 表上所有索引的OID链表
 	Oid			rd_pkindex;		/* OID of primary key, if any */
 	Oid			rd_replidindex; /* OID of replica identity index, if any */
 
@@ -143,7 +144,7 @@ typedef struct RelationData
 	List	   *rd_statlist;	/* list of OIDs of extended stats */
 
 	/* data managed by RelationGetIndexAttrBitmap: */
-	Bitmapset  *rd_indexattr;	/* identifies columns used in indexes */
+	Bitmapset  *rd_indexattr;	/* identifies columns used in indexes */	// rd_indexlist 中各索引用到的属性
 	Bitmapset  *rd_keyattr;		/* cols that can be ref'd by foreign keys */
 	Bitmapset  *rd_pkattr;		/* cols included in primary key */
 	Bitmapset  *rd_idattr;		/* included in replica identity index */
