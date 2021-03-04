@@ -56,19 +56,19 @@ typedef void (*MemoryStatsPrintFunc) (MemoryContext context, void *passthru,
 
 typedef struct MemoryContextMethods
 {
-	void	   *(*alloc) (MemoryContext context, Size size);
+	void	   *(*alloc) (MemoryContext context, Size size);	// 分配内存函数
 	/* call this free_p in case someone #define's free() */
-	void		(*free_p) (MemoryContext context, void *pointer);
-	void	   *(*realloc) (MemoryContext context, void *pointer, Size size);
-	void		(*reset) (MemoryContext context);
-	void		(*delete_context) (MemoryContext context);
-	Size		(*get_chunk_space) (MemoryContext context, void *pointer);
-	bool		(*is_empty) (MemoryContext context);
-	void		(*stats) (MemoryContext context,
+	void		(*free_p) (MemoryContext context, void *pointer);	// 释放内存函数
+	void	   *(*realloc) (MemoryContext context, void *pointer, Size size);	// 重分配内存
+	void		(*reset) (MemoryContext context);	// 重置内存上下文
+	void		(*delete_context) (MemoryContext context);	// 删除内存上下文
+	Size		(*get_chunk_space) (MemoryContext context, void *pointer);	// 检查内存片段的大小
+	bool		(*is_empty) (MemoryContext context);	// 检查内存上下文是否为空
+	void		(*stats) (MemoryContext context,	
 						  MemoryStatsPrintFunc printfunc, void *passthru,
-						  MemoryContextCounters *totals);
+						  MemoryContextCounters *totals);	// 打印内存上下文状态
 #ifdef MEMORY_CONTEXT_CHECKING
-	void		(*check) (MemoryContext context);
+	void		(*check) (MemoryContext context);	// 检查所有内存片段
 #endif
 } MemoryContextMethods;
 /*
@@ -78,6 +78,9 @@ typedef struct MemoryContextMethods
 	1) 调用 MemoryContextInit 创建 TopMemoryContext 和 ErrorContext
 	2) 调用 AllocSetContextCreate 以 TopMemoryContext为根节点创建 PostmasterContext
 	3) 将全局指针 CurrentMemoryContext 指向 PostmasterContext
+
+	是一个抽象类，可以有多个实现，并不管理实际上的内存分配，仅仅是用作对 MemoryContextData 树的控制
+	管理一个内存上下文中的内存块是通过 AllocSet 结构来完成的，MemoryContext 仅作为 AllocSet 的头部信息存在
 */
 typedef struct MemoryContextData
 {
@@ -86,12 +89,12 @@ typedef struct MemoryContextData
 	bool		isReset;		/* T = no space alloced since last reset */
 	bool		allowInCritSection; /* allow palloc in critical section */
 	Size		mem_allocated;	/* track memory allocated for this context */
-	const MemoryContextMethods *methods;	/* virtual function table */
-	MemoryContext parent;		/* NULL if no parent (toplevel context) */
-	MemoryContext firstchild;	/* head of linked list of children */
-	MemoryContext prevchild;	/* previous child of same parent */
-	MemoryContext nextchild;	/* next child of same parent */
-	const char *name;			/* context name (just for debugging) */
+	const MemoryContextMethods *methods;	/* virtual function table */	// 内存处理函数指针
+	MemoryContext parent;		/* NULL if no parent (toplevel context) */	// 父节点指针
+	MemoryContext firstchild;	/* head of linked list of children */	// 第一个孩子节点指针
+	MemoryContext prevchild;	/* previous child of same parent */	// 前一个兄弟节点指针
+	MemoryContext nextchild;	/* next child of same parent */	// 后一个兄弟节点指针
+	const char *name;			/* context name (just for debugging) */	// 节点的名字
 	const char *ident;			/* context ID if any (just for debugging) */
 	MemoryContextCallback *reset_cbs;	/* list of reset/delete callbacks */
 } MemoryContextData;

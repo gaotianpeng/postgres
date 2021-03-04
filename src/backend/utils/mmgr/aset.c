@@ -108,7 +108,7 @@ typedef struct AllocChunkData *AllocChunk;
  *		Aligned pointer which may be a member of an allocation set.
  */
 typedef void *AllocPointer;
-
+// MemoryContext 的标准实现
 /*
  * AllocSetContext is our standard implementation of MemoryContext.
  *
@@ -120,22 +120,23 @@ typedef void *AllocPointer;
  */
 typedef struct AllocSetContext
 {
-	MemoryContextData header;	/* Standard memory-context fields */
+	MemoryContextData header;	/* Standard memory-context fields */ // 对应于该内存上下文的头部信息
 	/* Info about storage allocated in this context: */
-	AllocBlock	blocks;			/* head of list of blocks in this set */
-	AllocChunk	freelist[ALLOCSET_NUM_FREELISTS];	/* free chunk lists */
+	AllocBlock	blocks;			/* head of list of blocks in this set */	// 该内存上下文中所有内存块的链表
+	AllocChunk	freelist[ALLOCSET_NUM_FREELISTS];	/* free chunk lists */	// 该内存上下文中空闲内存片的数组
 	/* Allocation parameters for this context: */
-	Size		initBlockSize;	/* initial block size */
-	Size		maxBlockSize;	/* maximum block size */
-	Size		nextBlockSize;	/* next block size to allocate */
-	Size		allocChunkLimit;	/* effective chunk size limit */
+	Size		initBlockSize;	/* initial block size */	// 初始内存块的大小，充当了内存块初始大小的备份值
+	Size		maxBlockSize;	/* maximum block size */	// 最大的内存块大小
+	Size		nextBlockSize;	/* next block size to allocate */	// 下一个要分配的内存块的大小
+	Size		allocChunkLimit;	/* effective chunk size limit */	// 分配内存片的尺寸阈值，该值在分配内存片时会用到
+	// 保存在 keeper 中的内存块在内存上下文重置时会保留不做释放
 	AllocBlock	keeper;			/* keep this block over resets */
 	/* freelist this context could be put in, or -1 if not a candidate: */
 	int			freeListIndex;	/* index in context_freelists[], or -1 */
 } AllocSetContext;
 
 typedef AllocSetContext *AllocSet;
-
+// 用于表示一个内存块，AllocBlockData 通过 next 字段链接成一个单向链表
 /*
  * AllocBlock
  *		An AllocBlock is the unit of memory that is obtained by aset.c
@@ -150,13 +151,16 @@ typedef AllocSetContext *AllocSet;
  */
 typedef struct AllocBlockData
 {
-	AllocSet	aset;			/* aset that owns this block */
-	AllocBlock	prev;			/* prev block in aset's blocks list, if any */
-	AllocBlock	next;			/* next block in aset's blocks list, if any */
-	char	   *freeptr;		/* start of free space in this block */
-	char	   *endptr;			/* end of space in this block */
+	AllocSet	aset;			/* aset that owns this block */	// 该内存块所在的 AllocSet
+	AllocBlock	prev;			/* prev block in aset's blocks list, if any */	// 指向前一个内存块的指针
+	AllocBlock	next;			/* next block in aset's blocks list, if any */ // 指向下一个内存块的指针
+	char	   *freeptr;		/* start of free space in this block */	// 指向该内存块空闲区域的首地址
+	char	   *endptr;			/* end of space in this block */	// 该内存块的末地址
 }			AllocBlockData;
-
+/*
+	在每个内存块中进行内存分配时产生的内存片段称之为内存片，每个内存片包括一个头部信息和数据区域
+	内存片的数据区域紧跟在其头部信息之后分配(palloc/pfree)
+*/
 /*
  * AllocChunk
  *		The prefix of each piece of memory in an AllocBlock
@@ -189,7 +193,7 @@ typedef struct AllocChunkData
 #endif
 
 	/* aset is the owning aset if allocated, or the freelist link if free */
-	void	   *aset;
+	void	   *aset;	// 该内存片所在的 AllocSet，如果内存片为完全可以闲，则用于链接其空闲链表
 	/* there must not be any padding to reach a MAXALIGN boundary here! */
 }			AllocChunkData;
 
@@ -277,7 +281,7 @@ static void AllocSetStats(MemoryContext context,
 #ifdef MEMORY_CONTEXT_CHECKING
 static void AllocSetCheck(MemoryContext context);
 #endif
-
+// 全局变量 AllocSetMethods
 /*
  * This is the virtual function table for AllocSet contexts.
  */

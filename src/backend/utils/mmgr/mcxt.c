@@ -30,7 +30,10 @@
 /*****************************************************************************
  *	  GLOBAL MEMORY															 *
  *****************************************************************************/
-
+/*
+	任何时候，都有一个“当前”的 MemoryContext, 进程就在这个内存上下文中调用 palloc 函数来分配内存
+	需要变换内存上下文时，使用 MemoryContextSwitchTo 将 CurrentMemoryContext 指向其他的内存上下文
+*/
 /*
  * CurrentMemoryContext
  *		Default memory context for allocations.
