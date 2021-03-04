@@ -17,8 +17,8 @@
 #include "storage/buf_internals.h"
 #include "storage/bufmgr.h"
 
-BufferDescPadded *BufferDescriptors;
-char	   *BufferBlocks;
+BufferDescPadded *BufferDescriptors;	// 共享缓冲池
+char	   *BufferBlocks;	// 缓冲池的起始地址
 LWLockMinimallyPadded *BufferIOLWLockArray = NULL;
 WritebackContext BackendWritebackContext;
 CkptSortItem *CkptBufferIds;

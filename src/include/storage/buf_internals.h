@@ -74,7 +74,11 @@
  * value to be very large.
  */
 #define BM_MAX_USAGE_COUNT	5
-
+/*
+	为了在共享缓冲池中快速查找缓冲区，在初始化缓冲池阶段系统为其在共享内存中创建了Hash表
+	BufferTag 结构体包含一个缓冲块的物理信息
+	共享缓冲区查询以 BufferTag 作为索引键查找 Hash 表
+*/
 /*
  * Buffer tag identifies which disk block the buffer contains.
  *
@@ -89,8 +93,8 @@
  */
 typedef struct buftag
 {
-	RelFileNode rnode;			/* physical relation identifier */
-	ForkNumber	forkNum;
+	RelFileNode rnode;			/* physical relation identifier */	// 由表所在的表空间 OID, 数据库OID及表本向的OID构成
+	ForkNumber	forkNum;	// 枚举类型，标记缓冲区中是什么类型的文件块
 	BlockNumber blockNum;		/* blknum relative to begin of reln */
 } BufferTag;
 
@@ -130,7 +134,7 @@ typedef struct buftag
 		BufTableHashPartition(hashcode)].lock)
 #define BufMappingPartitionLockByIndex(i) \
 	(&MainLWLockArray[BUFFER_MAPPING_LWLOCK_OFFSET + (i)].lock)
-
+// 缓冲区，缓冲池由多个缓冲区组成
 /*
  *	BufferDesc -- shared descriptor/state data for a single shared buffer.
  *
@@ -176,16 +180,19 @@ typedef struct buftag
  */
 typedef struct BufferDesc
 {
-	BufferTag	tag;			/* ID of page contained in buffer */
-	int			buf_id;			/* buffer's index number (from 0) */
+	BufferTag	tag;			/* ID of page contained in buffer */	// 缓冲区页面ID,指明了该缓冲区对应表块的物理信息
+	int			buf_id;			/* buffer's index number (from 0) */	// 缓冲区的索引号
 
 	/* state of the tag, containing flags, refcount and usagecount */
 	pg_atomic_uint32 state;
 
-	int			wait_backend_pid;	/* backend PID of pin-count waiter */
+	int			wait_backend_pid;	/* backend PID of pin-count waiter */	// 用于记录一个请求修改缓冲区的进程号
+	/*
+		如果当前缓冲区在空闲链表中，该值表示在当前缓冲区之后的空闲缓冲区描述符在数组中的索引号
+	*/
 	int			freeNext;		/* link in freelist chain */
 
-	LWLock		content_lock;	/* to lock access to buffer contents */
+	LWLock		content_lock;	/* to lock access to buffer contents */	// 进程对缓冲区内容访问时加锁
 } BufferDesc;
 
 /*
