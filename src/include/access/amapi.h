@@ -94,7 +94,10 @@ typedef struct OpFamilyMember
 /*
  * Callback function signatures --- see indexam.sgml for more info.
  */
-
+/*
+	用于创建一个索引。在调用ambuild之前，索引文件已经在物理上创建好了，但是是空的，还需要使用索引元组进行填充
+	ambuild的工作就是生成索引元组，并将它们填充到索引文件中
+*/
 /* build new index */
 typedef IndexBuildResult *(*ambuild_function) (Relation heapRelation,
 											   Relation indexRelation,
@@ -102,7 +105,9 @@ typedef IndexBuildResult *(*ambuild_function) (Relation heapRelation,
 
 /* build empty index */
 typedef void (*ambuildempty_function) (Relation indexRelation);
-
+/*
+	ambuild函数向现有索引中插入一个新的索引元组
+*/
 /* insert this tuple */
 typedef bool (*aminsert_function) (Relation indexRelation,
 								   Datum *values,
@@ -112,13 +117,13 @@ typedef bool (*aminsert_function) (Relation indexRelation,
 								   IndexUniqueCheck checkUnique,
 								   bool indexUnchanged,
 								   struct IndexInfo *indexInfo);
-
+// ambulkdelete函数从索引中删除元组
 /* bulk delete */
 typedef IndexBulkDeleteResult *(*ambulkdelete_function) (IndexVacuumInfo *info,
 														 IndexBulkDeleteResult *stats,
 														 IndexBulkDeleteCallback callback,
 														 void *callback_state);
-
+// amvacuumcleanup 会在一个VACCUM操作之后调用，主要做一些额外的清理工作
 /* post-VACUUM cleanup */
 typedef IndexBulkDeleteResult *(*amvacuumcleanup_function) (IndexVacuumInfo *info,
 															IndexBulkDeleteResult *stats);
@@ -135,7 +140,9 @@ typedef void (*amcostestimate_function) (struct PlannerInfo *root,
 										 Selectivity *indexSelectivity,
 										 double *indexCorrelation,
 										 double *indexPages);
-
+/*
+	用于分析和验证一个索引的reloptions数组，仅当一个索引存在非空reloptions数组时才会被调用
+*/
 /* parse index reloptions */
 typedef bytea *(*amoptions_function) (Datum reloptions,
 									  bool validate);
@@ -156,7 +163,9 @@ typedef void (*amadjustmembers_function) (Oid opfamilyoid,
 										  Oid opclassoid,
 										  List *operators,
 										  List *functions);
-
+/*
+	开始一个新的扫描。主要功能是构造索引扫描描述符结构 IndexScanDescData, 然后用该描述符执行扫描
+*/
 /* prepare for index scan */
 typedef IndexScanDesc (*ambeginscan_function) (Relation indexRelation,
 											   int nkeys,

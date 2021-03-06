@@ -102,7 +102,7 @@ typedef struct IndexFetchTableData
 {
 	Relation	rel;
 } IndexFetchTableData;
-
+// 索引通用的扫描描述符
 /*
  * We use the same IndexScanDescData structure for both amgettuple-based
  * and amgetbitmap-based index scans.  Some fields are only relevant in
@@ -111,24 +111,24 @@ typedef struct IndexFetchTableData
 typedef struct IndexScanDescData
 {
 	/* scan parameters */
-	Relation	heapRelation;	/* heap relation descriptor, or NULL */
-	Relation	indexRelation;	/* index relation descriptor */
-	struct SnapshotData *xs_snapshot;	/* snapshot to see */
-	int			numberOfKeys;	/* number of index qualifier conditions */
+	Relation	heapRelation;	/* heap relation descriptor, or NULL */ // 当前扫描的基表的描述符
+	Relation	indexRelation;	/* index relation descriptor */	// 索引描述符
+	struct SnapshotData *xs_snapshot;	/* snapshot to see */	// 用于可见性判断的快照
+	int			numberOfKeys;	/* number of index qualifier conditions */	// 扫描的关键字的个数
 	int			numberOfOrderBys;	/* number of ordering operators */
-	struct ScanKeyData *keyData;	/* array of index qualifier descriptors */
+	struct ScanKeyData *keyData;	/* array of index qualifier descriptors */	// 有关扫描关键字信息的数组
 	struct ScanKeyData *orderByData;	/* array of ordering op descriptors */
 	bool		xs_want_itup;	/* caller requests index tuples */
 	bool		xs_temp_snap;	/* unregister snapshot at scan end? */
 
 	/* signaling to index AM about killing index tuples */
-	bool		kill_prior_tuple;	/* last-returned tuple is dead */
-	bool		ignore_killed_tuples;	/* do not return killed entries */
+	bool		kill_prior_tuple;	/* last-returned tuple is dead */	// 上一个返回的元组是否有效
+	bool		ignore_killed_tuples;	/* do not return killed entries */	// 是否返回被killed的元组
 	bool		xactStartedInRecovery;	/* prevents killing/seeing killed
 										 * tuples */
 
 	/* index access method's private state */
-	void	   *opaque;			/* access-method-specific info */
+	void	   *opaque;			/* access-method-specific info */	// 进行扫描时，记录其扫描状态，由具体索引类型指定
 
 	/*
 	 * In an index-only scan, a successful amgettuple call must fill either
