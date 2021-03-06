@@ -31,10 +31,10 @@ struct ParallelTableScanDescData;
 typedef struct TableScanDescData
 {
 	/* scan parameters */
-	Relation	rs_rd;			/* heap relation descriptor */
-	struct SnapshotData *rs_snapshot;	/* snapshot to see */
-	int			rs_nkeys;		/* number of scan keys */
-	struct ScanKeyData *rs_key; /* array of scan key descriptors */
+	Relation	rs_rd;			/* heap relation descriptor */	// 表描述信息
+	struct SnapshotData *rs_snapshot;	/* snapshot to see */	// 快照,记录了一些事务相关的信息
+	int			rs_nkeys;		/* number of scan keys */	// 扫描键的个数
+	struct ScanKeyData *rs_key; /* array of scan key descriptors */	// 描述键描述结构体
 
 	/*
 	 * Information about type and behaviour of the scan, a bitmask of members

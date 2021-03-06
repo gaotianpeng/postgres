@@ -40,35 +40,37 @@ typedef struct BulkInsertStateData *BulkInsertState;
 struct TupleTableSlot;
 
 #define MaxLockTupleMode	LockTupleExclusive
-
+/*
+	文件--> 文件块 --> 缓冲区 --> 页  --> 元组
+*/
 /*
  * Descriptor for heap table scans.
  */
 typedef struct HeapScanDescData
 {
-	TableScanDescData rs_base;	/* AM independent part of the descriptor */
+	TableScanDescData rs_base;	/* AM independent part of the descriptor */	// 设定扫描参数
 
 	/* state set up at initscan time */
-	BlockNumber rs_nblocks;		/* total number of blocks in rel */
-	BlockNumber rs_startblock;	/* block # to start at */
+	BlockNumber rs_nblocks;		/* total number of blocks in rel */	// 需要读的表块数
+	BlockNumber rs_startblock;	/* block # to start at */	// 扫描起始块号
 	BlockNumber rs_numblocks;	/* max number of blocks to scan */
 	/* rs_numblocks is usually InvalidBlockNumber, meaning "scan whole rel" */
 
-	/* scan current state */
-	bool		rs_inited;		/* false = scan not init'd yet */
-	BlockNumber rs_cblock;		/* current block # in scan, if any */
-	Buffer		rs_cbuf;		/* current buffer in scan, if any */
+	/* scan current state */	// 初始化
+	bool		rs_inited;		/* false = scan not init'd yet */	// 是否已经初始化扫描
+	BlockNumber rs_cblock;		/* current block # in scan, if any */	// 当前扫描到的块号
+	Buffer		rs_cbuf;		/* current buffer in scan, if any */ // 当前扫描的缓冲区
 	/* NB: if rs_cbuf is not InvalidBuffer, we hold a pin on that buffer */
 
 	/* rs_numblocks is usually InvalidBlockNumber, meaning "scan whole rel" */
-	BufferAccessStrategy rs_strategy;	/* access strategy for reads */
+	BufferAccessStrategy rs_strategy;	/* access strategy for reads */	// 缓冲区控制策略
 
-	HeapTupleData rs_ctup;		/* current tuple in scan, if any */
+	HeapTupleData rs_ctup;		/* current tuple in scan, if any */	// 当前描述到的元组
 
 	/* these fields only used in page-at-a-time mode and for bitmap scans */
-	int			rs_cindex;		/* current tuple's index in vistuples */
-	int			rs_ntuples;		/* number of visible tuples on page */
-	OffsetNumber rs_vistuples[MaxHeapTuplesPerPage];	/* their offsets */
+	int			rs_cindex;		/* current tuple's index in vistuples */	// 当前元组在rs_vistuple数组中的位置
+	int			rs_ntuples;		/* number of visible tuples on page */	// 当前块内可见的元组数
+	OffsetNumber rs_vistuples[MaxHeapTuplesPerPage];	/* their offsets */	// 存储当前块内可见的元组统称数组
 }			HeapScanDescData;
 typedef struct HeapScanDescData *HeapScanDesc;
 

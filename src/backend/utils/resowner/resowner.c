@@ -107,7 +107,10 @@ typedef struct ResourceArray
  * it is to release locks (in retail), when a resource owner holds many locks.
  */
 #define MAX_RESOWNER_LOCKS 15
-
+/*
+	pg 中，每个事务(包括其子事务)在执行时，需要跟踪其占用的内存资源，以保证在事务结束或者失败的时候
+	能够被及时释放。 pg 使用 ResourceOwner 对象来对资源集中进行跟踪
+*/
 /*
  * ResourceOwner objects look like this
  */

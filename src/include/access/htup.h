@@ -26,6 +26,9 @@ typedef struct MinimalTupleData MinimalTupleData;
 
 typedef MinimalTupleData *MinimalTuple;
 
+/*
+	一个完整的元组信息对应一个HeapTupleData结构和一个TupleDesc结构
+*/
 
 /*
  * HeapTupleData is an in-memory data structure that points to a tuple.
@@ -59,13 +62,16 @@ typedef MinimalTupleData *MinimalTuple;
  * a disk buffer, or if it represents a copy of a tuple on disk.  They
  * should be explicitly set invalid in manufactured tuples.
  */
+/*
+	元组在内存中的拷贝，它是磁盘格式的元组读入内存后的存在方式
+*/
 typedef struct HeapTupleData
 {
-	uint32		t_len;			/* length of *t_data */
-	ItemPointerData t_self;		/* SelfItemPointer */
-	Oid			t_tableOid;		/* table the tuple came from */
+	uint32		t_len;			/* length of *t_data */	// 元组的长度
+	ItemPointerData t_self;		/* SelfItemPointer */	// 记录块号以及元组在块内的偏移量
+	Oid			t_tableOid;		/* table the tuple came from */	// 元组所在表的OID
 #define FIELDNO_HEAPTUPLEDATA_DATA 3
-	HeapTupleHeader t_data;		/* -> tuple header and data */
+	HeapTupleHeader t_data;		/* -> tuple header and data */	// 用于记录元组头信息
 } HeapTupleData;
 
 typedef HeapTupleData *HeapTuple;

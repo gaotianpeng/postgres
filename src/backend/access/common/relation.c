@@ -44,6 +44,7 @@
  *		expected to check whether the relkind is something it can handle.
  * ----------------
  */
+// 根据表的OID打开：表的打开并不是打开具体的物理文件，仅仅返回该表的 RelationData 结构体
 Relation
 relation_open(Oid relationId, LOCKMODE lockmode)
 {
@@ -134,6 +135,7 @@ try_relation_open(Oid relationId, LOCKMODE lockmode)
  *		Same as relation_open, but the relation is specified by a RangeVar.
  * ----------------
  */
+// 根据表名打开
 Relation
 relation_openrv(const RangeVar *relation, LOCKMODE lockmode)
 {

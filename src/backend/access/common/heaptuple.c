@@ -290,7 +290,7 @@ fill_val(Form_pg_attribute att,
 	data += data_length;
 	*dataP = data;
 }
-
+// 向元组中填充实际数据
 /*
  * heap_fill_tuple
  *		Load data portion of a tuple from values/isnull arrays
@@ -1016,6 +1016,7 @@ heap_copy_tuple_as_datum(HeapTuple tuple, TupleDesc tupleDesc)
  *
  * The result is allocated in the current memory context.
  */
+// 根据元组内数据和描述符等信息初始化 HeapTuple
 HeapTuple
 heap_form_tuple(TupleDesc tupleDescriptor,
 				Datum *values,

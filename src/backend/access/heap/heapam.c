@@ -1311,7 +1311,7 @@ heap_endscan(TableScanDesc sscan)
 
 	pfree(scan);
 }
-
+// 进行表扫描
 HeapTuple
 heap_getnext(TableScanDesc sscan, ScanDirection direction)
 {

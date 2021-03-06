@@ -76,15 +76,20 @@ typedef struct TupleConstr
  * field of such a descriptor to -1, while reference-counted descriptors
  * always have tdrefcount >= 0.
  */
+/*
+	是关系结构RelationData的一部分，也称为元组描述符，记录了该元组相关的全部属性模式信息
+	通过元组描述符可以读取磁盘中存储的元格式数据，并根据元组描述符构造出元组的各处属性值
+*/
 typedef struct TupleDescData
 {
-	int			natts;			/* number of attributes in the tuple */
-	Oid			tdtypeid;		/* composite type ID for tuple type */
+	int			natts;			/* number of attributes in the tuple */	// 元组属性的个数
+	Oid			tdtypeid;		/* composite type ID for tuple type */ // 元组的复合类型ID
 	int32		tdtypmod;		/* typmod for tuple type */
-	int			tdrefcount;		/* reference count, or -1 if not counting */
+	int			tdrefcount;		/* reference count, or -1 if not counting */ // 元组引用计数，当为0时才能被删除
+	// 元组的约束条件(数组),从pg_constraint读取，每个元素是一个约束条件
 	TupleConstr *constr;		/* constraints, or NULL if none */
 	/* attrs[N] is the description of Attribute Number N+1 */
-	FormData_pg_attribute attrs[FLEXIBLE_ARRAY_MEMBER];
+	FormData_pg_attribute attrs[FLEXIBLE_ARRAY_MEMBER];	// 表示元组每个属性的相关信息，从pg_attribute中读取，每个元素表示一个属性
 }			TupleDescData;
 typedef struct TupleDescData *TupleDesc;
 
