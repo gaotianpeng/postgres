@@ -92,7 +92,7 @@ typedef Node *(*CoerceParamHook) (ParseState *pstate, Param *param,
 								  Oid targetTypeId, int32 targetTypeMod,
 								  int location);
 
-
+// ParseState 结构用于记录语义分析的中间信息
 /*
  * State information used during parse analysis
  *
@@ -176,12 +176,12 @@ typedef Node *(*CoerceParamHook) (ParseState *pstate, Param *param,
  */
 struct ParseState
 {
-	ParseState *parentParseState;	/* stack link */
-	const char *p_sourcetext;	/* source text, or NULL if not available */
-	List	   *p_rtable;		/* range table so far */
-	List	   *p_joinexprs;	/* JoinExprs for RTE_JOIN p_rtable entries */
+	ParseState *parentParseState;	/* stack link */	// 如果当前是一个子查询，这个字段指向其外层查询
+	const char *p_sourcetext;	/* source text, or NULL if not available */	// 原始SQL命令，用于根据报告语法分析出错的位置
+	List	   *p_rtable;		/* range table so far */	// 查询涉及的表，称为范围表
+	List	   *p_joinexprs;	/* JoinExprs for RTE_JOIN p_rtable entries */	// 连接表达式
 	List	   *p_joinlist;		/* join items so far (will become FromExpr
-								 * node's fromlist) */
+								 * node's fromlist) */	// 连接项
 	List	   *p_namespace;	/* currently-referenceable RTEs (List of
 								 * ParseNamespaceItem) */
 	bool		p_lateral_active;	/* p_lateral_only items visible? */

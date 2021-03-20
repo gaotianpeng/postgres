@@ -120,7 +120,7 @@ typedef struct Query
 	Node	   *utilityStmt;	/* non-null if commandType == CMD_UTILITY */
 
 	int			resultRelation; /* rtable index of target relation for
-								 * INSERT/UPDATE/DELETE; 0 for SELECT */
+								 * INSERT/UPDATE/DELETE; 0 for SELECT */ // 结果关系表，是涉及数据修改的范围表
 	/* 各种类型的子句是否存在的标志*/
 	bool		hasAggs;		/* has aggregates in tlist or havingQual */	// 存在聚集函数或HAVING子句
 	bool		hasWindowFuncs; /* has window functions in tlist */	// 存在窗口函数
