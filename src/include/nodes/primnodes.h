@@ -63,9 +63,9 @@ typedef enum OnCommitAction
 typedef struct RangeVar
 {
 	NodeTag		type;
-	char	   *catalogname;	/* the catalog (database) name, or NULL */
-	char	   *schemaname;		/* the schema name, or NULL */
-	char	   *relname;		/* the relation/sequence name */
+	char	   *catalogname;	/* the catalog (database) name, or NULL */	// 表所在的数据库名，如果为空表示在当前数据库中
+	char	   *schemaname;		/* the schema name, or NULL */ // 表所在的模式名，如果为空表示在当前模式中
+	char	   *relname;		/* the relation/sequence name */	// 表或序列名称
 	bool		inh;			/* expand rel by inheritance? recursively act
 								 * on children? */
 	char		relpersistence; /* see RELPERSISTENCE_* in pg_class.h */

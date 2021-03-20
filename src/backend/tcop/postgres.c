@@ -979,7 +979,13 @@ pg_plan_queries(List *querytrees, const char *query_string, int cursorOptions,
 	return stmt_list;
 }
 
-
+/*
+	用户的SQL命令，统一由exec_simple_query函数处理。
+	1) 调用 pg_parse_query 完成词法和语法分析并产生分析树
+	2) 调用 pg_analyze_and_rewrite 逐个对分析树进行语义分析和重写
+		parse_analyzer 进行语义分析并创建查询树(Query结构)
+		pg_rewrite_query 对查询树进行重写
+*/
 /*
  * exec_simple_query
  *

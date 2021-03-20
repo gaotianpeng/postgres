@@ -272,7 +272,7 @@ typedef enum A_Expr_Kind
 typedef struct A_Expr
 {
 	NodeTag		type;
-	A_Expr_Kind kind;			/* see above */
+	A_Expr_Kind kind;			/* see above */	// 表达式类型
 	List	   *name;			/* possibly-qualified name of operator */
 	Node	   *lexpr;			/* left argument, or NULL if none */
 	Node	   *rexpr;			/* right argument, or NULL if none */
@@ -439,10 +439,10 @@ typedef struct A_ArrayExpr
 typedef struct ResTarget
 {
 	NodeTag		type;
-	char	   *name;			/* column name or NULL */
-	List	   *indirection;	/* subscripts, field names, and '*', or NIL */
-	Node	   *val;			/* the value expression to compute or assign */
-	int			location;		/* token location, or -1 if unknown */
+	char	   *name;			/* column name or NULL */	// 用 AS 指定的目标属性名称，没有则为空
+	List	   *indirection;	/* subscripts, field names, and '*', or NIL */	// 通过* 或下标引用的目标属性，没有则为NIL
+	Node	   *val;			/* the value expression to compute or assign */	// 指向各种表达式(FuncCall结构体)
+	int			location;		/* token location, or -1 if unknown */	// 符号出现在位置
 } ResTarget;
 
 /*
@@ -1632,7 +1632,7 @@ typedef enum SetOperation
 
 typedef struct SelectStmt
 {
-	NodeTag		type;
+	NodeTag		type;	// T_SelectStmt
 
 	/*
 	 * These fields are used only in "leaf" SelectStmts.
