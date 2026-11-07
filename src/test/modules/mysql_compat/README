@@ -1,0 +1,11 @@
+src/test/modules/mysql_compat/README
+
+Regression tests for the MySQL-compatible SHOW statements
+(SHOW DATABASES, SHOW TABLES) and the USE statement.
+
+The tests live in a dedicated module rather than in the main
+src/test/regress suite because SHOW DATABASES reports every connectable
+database in the cluster, so its output is only stable in a controlled
+cluster.  The pg_upgrade test suite, for example, creates databases
+whose names contain nearly every ASCII character, which would break any
+fixed expected output in the main suite.

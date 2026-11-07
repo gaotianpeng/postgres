@@ -23,6 +23,9 @@ PostgreSQL documentation
 <synopsis>
 SHOW <replaceable class="parameter">name</replaceable>
 SHOW ALL
+SHOW DATABASES
+SHOW TABLES
+SHOW COLUMNS FROM <replaceable class="parameter">table</replaceable> [LIKE <replaceable class="parameter">pattern</replaceable>]
 </synopsis>
  </refsynopsisdiv>
 
@@ -39,6 +42,35 @@ SHOW ALL
    application), or through command-line flags when starting the
    <command>postgres</command> server.  See <xref
    linkend="runtime-config"/> for details.
+  </para>
+
+  <para>
+   For compatibility with <productname>MySQL</productname>, the names
+   <literal>DATABASES</literal> and <literal>TABLES</literal> are
+   handled specially rather than looked up as run-time parameters:
+   <command>SHOW DATABASES</command> lists the databases the current
+   role may connect to, and <command>SHOW TABLES</command> lists the
+   base tables and views visible in the current search path.  The
+   result column of <command>SHOW TABLES</command> is named after the
+   first schema on the search path, in the style of MySQL's
+   <literal>Tables_in_db</literal> column.
+  </para>
+
+  <para>
+   Also for MySQL compatibility,
+   <command>SHOW COLUMNS FROM</command>
+   <replaceable class="parameter">table</replaceable> (or the synonym
+   <command>DESCRIBE</command>
+   <replaceable class="parameter">table</replaceable>) lists the
+   relation's columns as <literal>Field</literal>,
+   <literal>Type</literal>, <literal>Null</literal>,
+   <literal>Key</literal>, <literal>Default</literal> and
+   <literal>Extra</literal>, where <literal>Key</literal> marks
+   primary-key members as <literal>PRI</literal> and identity columns
+   report <literal>auto_increment</literal> in
+   <literal>Extra</literal>.  An optional
+   <literal>LIKE <replaceable>pattern</replaceable></literal> clause
+   filters the column names.
   </para>
  </refsect1>
 

@@ -28,6 +28,7 @@
 #include "commands/async.h"
 #include "commands/cluster.h"
 #include "commands/collationcmds.h"
+#include "commands/mysql_compat.h"
 #include "commands/comment.h"
 #include "commands/conversioncmds.h"
 #include "commands/copy.h"
@@ -314,6 +315,7 @@ ClassifyUtilityCommandAsReadOnly(Node *parsetree)
 
 		case T_ExplainStmt:
 		case T_VariableShowStmt:
+		case T_ShowColumnsStmt:
 			{
 				/*
 				 * These commands don't modify any data and are safe to run in
@@ -881,6 +883,10 @@ standard_ProcessUtility(PlannedStmt *pstmt,
 
 				GetPGVariable(n->name, dest);
 			}
+			break;
+
+		case T_ShowColumnsStmt:
+			ShowCompatColumns((ShowColumnsStmt *) parsetree, dest);
 			break;
 
 		case T_DiscardStmt:
@@ -2083,6 +2089,9 @@ UtilityReturnsTuples(Node *parsetree)
 		case T_VariableShowStmt:
 			return true;
 
+		case T_ShowColumnsStmt:
+			return true;
+
 		default:
 			return false;
 	}
@@ -2137,6 +2146,9 @@ UtilityTupleDescriptor(Node *parsetree)
 
 				return GetPGVariableResultDesc(n->name);
 			}
+
+		case T_ShowColumnsStmt:
+			return ShowCompatColumnsResultDesc();
 
 		default:
 			return NULL;
@@ -2936,6 +2948,10 @@ CreateCommandTag(Node *parsetree)
 			tag = CMDTAG_SHOW;
 			break;
 
+		case T_ShowColumnsStmt:
+			tag = CMDTAG_SHOW;
+			break;
+
 		case T_DiscardStmt:
 			switch (((DiscardStmt *) parsetree)->target)
 			{
@@ -3570,6 +3586,10 @@ GetCommandLogLevel(Node *parsetree)
 			break;
 
 		case T_VariableShowStmt:
+			lev = LOGSTMT_ALL;
+			break;
+
+		case T_ShowColumnsStmt:
 			lev = LOGSTMT_ALL;
 			break;
 

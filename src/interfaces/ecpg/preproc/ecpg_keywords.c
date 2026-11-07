@@ -40,15 +40,21 @@ ScanECPGKeywordLookup(const char *text)
 {
 	int			kwnum;
 
-	/* First check SQL symbols defined by the backend. */
-	kwnum = ScanKeywordLookup(text, &ScanKeywords);
-	if (kwnum >= 0)
-		return SQLScanKeywordTokens[kwnum];
-
-	/* Try ECPG-specific keywords. */
+	/*
+	 * Check ECPG-specific keywords first.  The backend keyword list is a
+	 * superset that may claim the same spelling for a different purpose
+	 * (the first case is "describe": the backend accepts DESCRIBE tbl for
+	 * MySQL compatibility, while embedded SQL has always used it for
+	 * EXEC SQL DESCRIBE), and in those cases the ECPG meaning must win.
+	 */
 	kwnum = ScanKeywordLookup(text, &ScanECPGKeywords);
 	if (kwnum >= 0)
 		return ECPGScanKeywordTokens[kwnum];
+
+	/* Then check SQL symbols defined by the backend. */
+	kwnum = ScanKeywordLookup(text, &ScanKeywords);
+	if (kwnum >= 0)
+		return SQLScanKeywordTokens[kwnum];
 
 	return -1;
 }

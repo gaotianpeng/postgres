@@ -301,7 +301,7 @@ static Node *makeRecursiveViewSelect(char *relname, List *aliases, Node *query);
 		RuleActionStmt RuleActionStmtOrEmpty RuleStmt
 		SecLabelStmt SelectStmt TransactionStmt TransactionStmtLegacy TruncateStmt
 		UnlistenStmt UpdateStmt VacuumStmt
-		VariableResetStmt VariableSetStmt VariableShowStmt
+		ShowColumnsStmt VariableResetStmt VariableSetStmt VariableShowStmt
 		ViewStmt CheckPointStmt CreateConversionStmt
 		DeallocateStmt PrepareStmt ExecuteStmt
 		DropOwnedStmt ReassignOwnedStmt
@@ -315,6 +315,7 @@ static Node *makeRecursiveViewSelect(char *relname, List *aliases, Node *query);
 				PLpgSQL_Expr PLAssignStmt
 
 %type <str>			opt_single_name
+%type <str>			show_columns_like
 %type <list>		opt_qualified_name
 %type <boolean>		opt_concurrently
 %type <dbehavior>	opt_drop_behavior
@@ -715,6 +716,7 @@ static Node *makeRecursiveViewSelect(char *relname, List *aliases, Node *query);
 
 	DATA_P DATABASE DAY_P DEALLOCATE DEC DECIMAL_P DECLARE DEFAULT DEFAULTS
 	DEFERRABLE DEFERRED DEFINER DELETE_P DELIMITER DELIMITERS DEPENDS DEPTH DESC
+	DESCRIBE
 	DETACH DICTIONARY DISABLE_P DISCARD DISTINCT DO DOCUMENT_P DOMAIN_P
 	DOUBLE_P DROP
 
@@ -1112,6 +1114,7 @@ stmt:
 			| VariableResetStmt
 			| VariableSetStmt
 			| VariableShowStmt
+			| ShowColumnsStmt
 			| ViewStmt
 			| /*EMPTY*/
 				{ $$ = NULL; }
@@ -1999,6 +2002,37 @@ VariableShowStmt:
 					n->name = "all";
 					$$ = (Node *) n;
 				}
+		;
+
+
+/*
+ * MySQL compatibility: SHOW COLUMNS FROM tbl describes a relation in
+ * MySQL's six-column format.  Bare "SHOW COLUMNS" keeps its generic
+ * meaning of a (nonexistent) GUC named "columns".  DESCRIBE tbl is a
+ * synonym, and an optional LIKE clause filters the column names.
+ */
+ShowColumnsStmt:
+			SHOW COLUMNS FROM qualified_name show_columns_like
+				{
+					ShowColumnsStmt *n = makeNode(ShowColumnsStmt);
+
+					n->relation = $4;
+					n->pattern = $5;
+					$$ = (Node *) n;
+				}
+			| DESCRIBE qualified_name show_columns_like
+				{
+					ShowColumnsStmt *n = makeNode(ShowColumnsStmt);
+
+					n->relation = $2;
+					n->pattern = $3;
+					$$ = (Node *) n;
+				}
+		;
+
+show_columns_like:
+			LIKE Sconst					{ $$ = $2; }
+			| /*EMPTY*/					{ $$ = NULL; }
 		;
 
 
@@ -17753,6 +17787,7 @@ unreserved_keyword:
 			| DELIMITERS
 			| DEPENDS
 			| DEPTH
+			| DESCRIBE
 			| DETACH
 			| DICTIONARY
 			| DISABLE_P
@@ -18329,6 +18364,7 @@ bare_label_keyword:
 			| DEPENDS
 			| DEPTH
 			| DESC
+			| DESCRIBE
 			| DETACH
 			| DICTIONARY
 			| DISABLE_P

@@ -11,6 +11,7 @@ SUBDIRS = \
 		  dummy_index_am \
 		  dummy_seclabel \
 		  libpq_pipeline \
+		  mysql_compat \
 		  oauth_validator \
 		  plsample \
 		  spgist_name_ops \

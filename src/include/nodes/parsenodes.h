@@ -2728,6 +2728,27 @@ typedef struct VariableShowStmt
 } VariableShowStmt;
 
 /* ----------------------
+ *		Show Columns Statement (MySQL compatibility)
+ *
+ *		SHOW COLUMNS FROM tbl lists the relation's columns in MySQL's
+ *		six-column format.  "pattern" is a LIKE filter on the column
+ *		names, or NULL for none.
+ * ----------------------
+ */
+typedef struct ShowColumnsStmt
+{
+	/*
+	 * Stable branch: assign an explicit nodetag number so that existing
+	 * tags keep their ABI-stable values (see gen_node_support.pl).
+	 */
+	pg_node_attr(nodetag_number(481))
+
+	NodeTag		type;
+	RangeVar   *relation;		/* relation to describe */
+	char	   *pattern;			/* LIKE pattern, or NULL */
+} ShowColumnsStmt;
+
+/* ----------------------
  *		Create Table Statement
  *
  * NOTE: in the raw gram.y output, ColumnDef and Constraint nodes are

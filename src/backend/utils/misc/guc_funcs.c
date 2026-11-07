@@ -22,6 +22,7 @@
 #include "catalog/objectaccess.h"
 #include "catalog/pg_authid.h"
 #include "catalog/pg_parameter_acl.h"
+#include "commands/mysql_compat.h"
 #include "funcapi.h"
 #include "guc_internal.h"
 #include "miscadmin.h"
@@ -383,6 +384,8 @@ GetPGVariable(const char *name, DestReceiver *dest)
 {
 	if (guc_name_compare(name, "all") == 0)
 		ShowAllGUCConfig(dest);
+	else if (ShowCompatIsName(name))
+		ShowCompatExecute(name, dest);
 	else
 		ShowGUCConfigOption(name, dest);
 }
@@ -405,6 +408,11 @@ GetPGVariableResultDesc(const char *name)
 						   TEXTOID, -1, 0);
 		TupleDescInitEntry(tupdesc, (AttrNumber) 3, "description",
 						   TEXTOID, -1, 0);
+	}
+	else if (ShowCompatIsName(name))
+	{
+		/* MySQL-compatible SHOW DATABASES / SHOW TABLES */
+		tupdesc = ShowCompatResultDesc(name);
 	}
 	else
 	{

@@ -43,6 +43,7 @@ OBJS = \
 	indexcmds.o \
 	lockcmds.o \
 	matview.o \
+	mysql_compat.o \
 	opclasscmds.o \
 	operatorcmds.o \
 	policy.o \
